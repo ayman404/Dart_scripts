@@ -1,0 +1,19 @@
+{
+    "paths": {
+        "simulation_path": "C:/Users/LENOVO/DART/user_data/simulations",
+        "position_txt_path": "C:/Users/LENOVO/DART/user_data/positions/position.txt",
+        "tree_obj_path": "C:/Users/LENOVO/DART/user_data/3D_Objects/trees"
+    },
+    "simulation_settings": {
+        "multi_sol": false,
+        "multi_tree": false,
+        "run_sequencer": true
+    },
+    "parameters_to_vary": {
+        "scale": false,
+        "tree_temperature": false,
+        "chlorophyl": false,
+        "water_thickness": false,
+        "soil_temperature": false
+    }
+} 
