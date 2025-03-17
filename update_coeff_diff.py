@@ -108,6 +108,16 @@ def update_coeff_diff_xml(config_path):
                 prospect_params
             )
             lambertian_multi_functions.append(leaf)
+    else:
+        # Add a single default leaf entry for uniform parameters
+        leaf = create_lambertian_multi(
+            "leaf",
+            "reflect_equal_1_trans_equal_0_0",
+            "Lambertian_vegetation.db",
+            True,
+            prospect_params
+        )
+        lambertian_multi_functions.append(leaf)
     
     # Add trunk entry
     trunk = create_lambertian_multi("trunk", "bark_spruce", "Lambertian_vegetation.db")

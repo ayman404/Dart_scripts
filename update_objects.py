@@ -151,7 +151,7 @@ def create_object(position_data, object_index, obj_file_path, use_individual_tem
     if use_individual_optical:
         leaves_opl.set("ident", f"leaf_{object_index}")
     else:
-        leaves_opl.set("ident", "leaf_0")
+        leaves_opl.set("ident", "leaf")
     leaves_opl.set("indexFctPhase", "0")
     leaves_opl.set("type", "0")
     
