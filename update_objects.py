@@ -232,7 +232,7 @@ def update_object_3d_xml(config_path):
     if not obj_files:
         print(f"No .obj files found in {tree_obj_path}")
         return
-    
+    #print(settings['multi_tree'])
     # Select obj file based on multi_tree setting
     if not settings['multi_tree']:
         obj_files = [obj_files[0]]  # Use only the first obj file
@@ -263,7 +263,8 @@ def update_object_3d_xml(config_path):
     
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write('\n'.join(line for line in xml_str.split('\n') if line.strip()))
+        # Remove the first line (xml declaration) since we already wrote it
+        f.write(xml_str[xml_str.find("\n")+1:])
     
     print(f"Updated object_3d.xml has been generated at: {output_path}")
 
