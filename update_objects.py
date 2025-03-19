@@ -269,5 +269,6 @@ def update_object_3d_xml(config_path):
     print(f"Updated object_3d.xml has been generated at: {output_path}")
 
 if __name__ == "__main__":
-    config_path = "config.json"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "config.json")
     update_object_3d_xml(config_path) 
