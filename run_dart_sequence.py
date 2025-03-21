@@ -385,25 +385,7 @@ def run_for_all_soils(config, simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS
             if os.path.exists(sequence_dir_base):
                 # Rename any existing sequence_i folders to include the current soil name
                 if i > 0:  # Only needed after first soil
-                    for item in os.listdir(sequence_dir_base):
-                        if item.startswith("sequence_") and not any(s in item for s in soils):
-                            old_path = os.path.join(sequence_dir_base, item)
-                            # Get the sequence number at the end
-                            seq_num = item.split("_")[-1]
-                            # Create new name with soil from previous iteration
-                            prev_soil = soils[i-1]
-                            new_path = os.path.join(sequence_dir_base, f"sequence_{prev_soil}_{seq_num}")
-                            
-                            if os.path.exists(new_path):
-                                try:
-                                    shutil.rmtree(new_path)
-                                except Exception as e:
-                                    print(f"Warning: Could not remove existing directory {new_path}: {str(e)}")
-                                    continue
-                            
-                            print(f"Renaming {old_path} to {new_path}")
-                            if not safe_rename_directory(old_path, new_path):
-                                print(f"Warning: Failed to rename {old_path} to {new_path}")
+                    rename_sequence_folders(sequence_dir_base, soils[i-1], soils)
             else:
                 # Create sequence directory if it doesn't exist
                 os.makedirs(sequence_dir_base, exist_ok=True)
@@ -428,37 +410,22 @@ def run_for_all_soils(config, simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS
             if result == 0:
                 print(f"Sequence completed successfully for soil '{soil}'")
                 
-                # Rename the newly created sequence_i folders to include this soil's name
-                # (We'll do this in the next iteration, or at the end for the last soil)
+                # For the last soil, rename its sequence folders immediately
+                if i == len(soils) - 1:
+                    print(f"Renaming sequence folders for the last soil: {soil}")
+                    rename_sequence_folders(sequence_dir_base, soil, soils)
             else:
                 print(f"Sequence failed for soil '{soil}' with return code: {result}")
                 all_successful = False
-        
-        # Rename the sequence folders from the last soil run
-        if soils and all_successful:
-            last_soil = soils[-1]
-            if os.path.exists(sequence_dir_base):
-                for item in os.listdir(sequence_dir_base):
-                    if item.startswith("sequence_") and not any(s in item for s in soils):
-                        old_path = os.path.join(sequence_dir_base, item)
-                        # Get the sequence number at the end
-                        seq_num = item.split("_")[-1]
-                        # Create new name with the last soil
-                        new_path = os.path.join(sequence_dir_base, f"sequence_{last_soil}_{seq_num}")
-                        
-                        if os.path.exists(new_path):
-                            try:
-                                shutil.rmtree(new_path)
-                            except Exception as e:
-                                print(f"Warning: Could not remove existing directory {new_path}: {str(e)}")
-                                continue
-                                
-                        print(f"Renaming {old_path} to {new_path}")
-                        if not safe_rename_directory(old_path, new_path):
-                            print(f"Warning: Failed to rename {old_path} to {new_path}")
+            
+            # Give the file system a brief moment to complete operations
+            time.sleep(1)
         
         # Restore original maket.xml
         restore_original_maket_xml(simulation_path)
+        
+        # Verify all sequence folders have been renamed correctly
+        check_and_fix_sequence_folders(sequence_dir_base, soils)
         
         # Print summary of where results are stored
         print("\n=== Simulation Complete ===")
@@ -467,6 +434,73 @@ def run_for_all_soils(config, simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS
         print("  Format: sequence_[soil_name]_[sequence_number]")
         
         return all_successful
+
+def rename_sequence_folders(sequence_dir, soil_name, all_soils):
+    """Rename sequence folders to include soil name"""
+    if not os.path.exists(sequence_dir):
+        return
+    
+    print(f"Looking for sequence folders to rename for soil: {soil_name}")
+    renamed_count = 0
+    
+    for item in os.listdir(sequence_dir):
+        # Find sequence folders that don't already have a soil name in them
+        if item.startswith("sequence_") and not any(s in item for s in all_soils):
+            old_path = os.path.join(sequence_dir, item)
+            # Get the sequence number from the folder name
+            parts = item.split("_")
+            if len(parts) >= 2:
+                seq_num = parts[-1]
+                new_path = os.path.join(sequence_dir, f"sequence_{soil_name}_{seq_num}")
+                
+                if os.path.exists(new_path):
+                    try:
+                        shutil.rmtree(new_path)
+                    except Exception as e:
+                        print(f"Warning: Could not remove existing directory {new_path}: {str(e)}")
+                        continue
+                
+                print(f"Renaming {old_path} to {new_path}")
+                if not safe_rename_directory(old_path, new_path):
+                    print(f"Warning: Failed to rename {old_path} to {new_path}")
+                else:
+                    renamed_count += 1
+    
+    print(f"Renamed {renamed_count} sequence folders for soil: {soil_name}")
+
+def check_and_fix_sequence_folders(sequence_dir, all_soils):
+    """Final check to ensure all sequence folders are properly named"""
+    if not os.path.exists(sequence_dir):
+        return
+    
+    # Check if any sequence folders remain without soil names
+    unnamed_folders = []
+    for item in os.listdir(sequence_dir):
+        if item.startswith("sequence_") and not any(s in item for s in all_soils):
+            unnamed_folders.append(item)
+    
+    if unnamed_folders:
+        print(f"\nWARNING: Found {len(unnamed_folders)} sequence folders without soil names:")
+        for folder in unnamed_folders:
+            print(f"  - {folder}")
+        print("These may be from the last soil run. Attempting to fix...")
+        
+        # Try to rename them with the last soil name
+        if all_soils:
+            last_soil = all_soils[-1]
+            for folder in unnamed_folders:
+                old_path = os.path.join(sequence_dir, folder)
+                parts = folder.split("_")
+                if len(parts) >= 2:
+                    seq_num = parts[-1]
+                    new_path = os.path.join(sequence_dir, f"sequence_{last_soil}_{seq_num}")
+                    
+                    if os.path.exists(new_path):
+                        continue  # Skip if target already exists
+                    
+                    print(f"Fixing: Renaming {old_path} to {new_path}")
+                    if not safe_rename_directory(old_path, new_path):
+                        print(f"Warning: Failed to rename {old_path} to {new_path}")
 
 def main():
     # Load configuration

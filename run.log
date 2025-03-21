@@ -1,0 +1,157 @@
+sequenceXMLFile=test\sequence.xml
+runMode=-start
+DART_HOME=C:\Users\LENOVO\DART
+DART_LOCAL=C:\Users\LENOVO\DART\user_data
+"Launcher used: $1 $2"
+           DartSequencer 1.0
+Sequencer file : test\sequence.xml
+ **************************************************
+C:\Users\LENOVO\DART\user_data\simulations\test\sequence.xml
+
+DartSequencerParameter n 1
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[0].GeometricProperties.ScaleProperties.xscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 2
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[0].GeometricProperties.ScaleProperties.yscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 3
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[0].GeometricProperties.ScaleProperties.zscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 4
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[1].GeometricProperties.ScaleProperties.xscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 5
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[1].GeometricProperties.ScaleProperties.yscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 6
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[1].GeometricProperties.ScaleProperties.zscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 7
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[2].GeometricProperties.ScaleProperties.xscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 8
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[2].GeometricProperties.ScaleProperties.yscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 9
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[2].GeometricProperties.ScaleProperties.zscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 10
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[3].GeometricProperties.ScaleProperties.xscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 11
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[3].GeometricProperties.ScaleProperties.yscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 12
+ -> numGroupe = 1
+ -> nomParam  = object_3d.ObjectList.Object[3].GeometricProperties.ScaleProperties.zscale
+ -> nbValue   = 2
+
+DartSequencerParameter n 13
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[0].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 14
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[1].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 15
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[2].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 16
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[3].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 17
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[4].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 18
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[5].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 19
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[6].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 20
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[7].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 21
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[8].meanT
+ -> nbValue   = 2
+
+DartSequencerParameter n 22
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[0].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nbValue   = 2
+
+DartSequencerParameter n 23
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[1].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nbValue   = 2
+
+DartSequencerParameter n 24
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[2].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nbValue   = 2
+
+DartSequencerParameter n 25
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nbValue   = 2
+
+DartSequencerParameter n 26
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[0].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nbValue   = 2
+
+DartSequencerParameter n 27
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[1].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nbValue   = 2
+
+DartSequencerParameter n 28
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[2].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nbValue   = 2
+
+DartSequencerParameter n 29
+ -> numGroupe = 1
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nbValue   = 2
+ -> Base simulation : C:\Users\LENOVO\DART\user_data\simulations\test
+           DartSequenceRunner 2.0
+ - Total processing time : 0 hours 0 minutes 23 secondes 532 millisecondes 
