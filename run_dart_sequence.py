@@ -563,9 +563,19 @@ def main():
             print(f"Sequence failed with return code: {result}")
     
     # Save results if configured and simulation was successful
-    if success and config['simulation_settings']['save_result_to_tif_json']:
-        save_script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saveTIFF.py")
-        os.system(f"python {save_script_path} {rd.random()}")
+    if config['simulation_settings']['save_result_to_tif_json']:
+        # Use the saveTIFF.py script in the same directory
+        save_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saveTIFF.py")
+        print(f"Saving TIFF outputs using: {save_script_path}")
+        try:
+            # Import and run directly instead of using os.system
+            from saveTIFF import save_tiff_and_props
+            save_tiff_and_props()
+            print("TIFF saving completed successfully")
+        except Exception as e:
+            print(f"Error saving TIFF outputs: {str(e)}")
+            # Fall back to external script call if direct import fails
+            os.system(f"python {save_script_path}")
 
 if __name__ == "__main__":
     main()

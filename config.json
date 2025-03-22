@@ -3,14 +3,14 @@
         "simulation_path": "C:/Users/LENOVO/DART/user_data/simulations/test",
         "position_txt_path": "C:/Users/LENOVO/DART/user_data/simulations/test/positions/position.txt",
         "tree_obj_path": "C:/Users/LENOVO/DART/user_data/simulations/test/trees",
-        "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/test/output/tif",
-        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/test/soils"
+        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/test/soils",
+        "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/test/saveTIF"
     },
     "simulation_settings": {
         "multi_sol": true,
         "multi_tree": true,
         "run_sequencer": true,
-        "save_result_to_tif_json": false
+        "save_result_to_tif_json": true
     },
     "parameters_to_vary": {
         "scale": true,
