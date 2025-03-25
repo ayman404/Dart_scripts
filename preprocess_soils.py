@@ -91,8 +91,8 @@ def get_spectral_intervals(simulation_path):
         
         print(f"Found {len(band_info)} spectral bands in phase.xml")
         print("Band information:")
-        for band_num, mode in sorted(band_info.items()):
-            print(f"  Band {band_num}: spectralDartMode = {mode}")
+        #for band_num, mode in sorted(band_info.items()):
+            #print(f"  Band {band_num}: spectralDartMode = {mode}")
         
         return band_info
         

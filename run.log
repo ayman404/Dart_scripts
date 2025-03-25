@@ -115,43 +115,52 @@ DartSequencerParameter n 21
 
 DartSequencerParameter n 22
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[0].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
  -> nbValue   = 2
 
 DartSequencerParameter n 23
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[1].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[4].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
  -> nbValue   = 2
 
 DartSequencerParameter n 24
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[2].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[5].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
  -> nbValue   = 2
 
 DartSequencerParameter n 25
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[6].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab
  -> nbValue   = 2
 
 DartSequencerParameter n 26
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[0].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
  -> nbValue   = 2
 
 DartSequencerParameter n 27
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[1].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[4].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
  -> nbValue   = 2
 
 DartSequencerParameter n 28
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[2].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[5].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
  -> nbValue   = 2
 
 DartSequencerParameter n 29
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[3].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
+ -> nomParam  = Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[6].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw
  -> nbValue   = 2
+
+DartSequencerParameter n 30
+ -> numGroupe = 2
+ -> nomParam  = Maket.Soil.OpticalPropertyLink.ident
+ -> nbValue   = 3
+
+DartSequencerParameter n 31
+ -> numGroupe = 2
+ -> nomParam  = Maket.Soil.OpticalPropertyLink.indexFctPhase
+ -> nbValue   = 3
  -> Base simulation : C:\Users\LENOVO\DART\user_data\simulations\test
            DartSequenceRunner 2.0
- - Total processing time : 0 hours 0 minutes 27 secondes 254 millisecondes 

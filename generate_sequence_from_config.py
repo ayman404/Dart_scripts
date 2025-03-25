@@ -3,6 +3,56 @@ from xml.dom import minidom
 import json
 import random as rd
 import os
+import sys
+from preprocess_soils import check_soil_factor_path, get_spectral_intervals
+
+def get_available_soils(config_path):
+    """Get list of available soil names based on configuration"""
+    try:
+        # Read configuration
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        
+        # If multi_sol is not enabled, return None
+        if not config['simulation_settings']['multi_sol']:
+            return None
+            
+        soil_factor_path = config['paths']['soil_factor_path']
+        simulation_path = config['paths']['simulation_path']
+        
+        # Check if soil factor path exists
+        if not os.path.exists(soil_factor_path) or not os.path.isdir(soil_factor_path):
+            print(f"Warning: Soil factor directory not found: {soil_factor_path}")
+            return None
+        
+        # Get spectral information for validation
+        spectral_info = get_spectral_intervals(simulation_path)
+        if not spectral_info:
+            print("Warning: Could not get spectral intervals information")
+            return None
+        
+        # Check soil folders and validate
+        valid_soils = []
+        try:
+            # Import the function if possible
+            sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+            from preprocess_soils import check_soil_band_files
+            valid_soils = check_soil_band_files(soil_factor_path, spectral_info)
+        except (ImportError, AttributeError):
+            # Fallback if import fails: just use directory names
+            valid_soils = [f for f in os.listdir(soil_factor_path) 
+                         if os.path.isdir(os.path.join(soil_factor_path, f))]
+            print("Warning: Using directory names as soil identifiers without validation")
+        
+        if not valid_soils:
+            print("Warning: No valid soil folders found")
+            return None
+            
+        return valid_soils
+    
+    except Exception as e:
+        print(f"Error getting available soils: {str(e)}")
+        return None
 
 def read_scale_from_positions(position_file_path):
     """Read scale values from positions.txt file."""
@@ -82,6 +132,14 @@ def create_sequence_xml(config_path):
     # Read scales from positions file if needed
     scales = read_scale_from_positions(position_file) if params_to_vary['scale'] else []
     
+    # Determine starting index offset for LambertianMulti elements
+    offset = 0
+    if config['simulation_settings']['multi_sol']:
+        soils = get_available_soils(config_path)
+        if soils and len(soils) > 0:
+            offset = len(soils)
+            print(f"Multi-soil enabled with {offset} soils - tree LambertianMulti indices will start from {offset}")
+    
     # Create root element
     root = ET.Element("DartFile")
     root.set("version", "1.0")
@@ -93,7 +151,7 @@ def create_sequence_xml(config_path):
     # Create entries section
     entries = ET.SubElement(descriptor, "DartSequencerDescriptorEntries")
     
-    # Create group
+    # Create primary group for parameters
     group = ET.SubElement(entries, "DartSequencerDescriptorGroup")
     group.set("currentDisplayedPage", "1")
     group.set("groupName", "group1")
@@ -146,7 +204,9 @@ def create_sequence_xml(config_path):
         for i in range(num_trees):
             cab_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
             cab_entry.set("args", ";".join(cab_values))
-            cab_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{i}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab")
+            # Use offset for LambertianMulti index
+            lambertian_index = i + offset
+            cab_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{lambertian_index}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab")
             cab_entry.set("type", "enumerate")
     
     # Water thickness (Cw) entries
@@ -154,8 +214,43 @@ def create_sequence_xml(config_path):
         for i in range(num_trees):
             cw_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
             cw_entry.set("args", ";".join(cw_values))
-            cw_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{i}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw")
+            # Use offset for LambertianMulti index
+            lambertian_index = i + offset
+            cw_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{lambertian_index}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw")
             cw_entry.set("type", "enumerate")
+    
+    # Handle multi_sol setting
+    if config['simulation_settings']['multi_sol']:
+        soils = get_available_soils(config_path)
+        if not soils or len(soils) == 0:
+            print("No valid soils found. Using default soil configuration.")
+            # No need to add soil-specific entries
+        else:
+            print(f"Found {len(soils)} valid soil(s). Adding soil entries to sequence.")
+            
+            # Create a dedicated group for soil parameters
+            soil_group = ET.SubElement(entries, "DartSequencerDescriptorGroup")
+            soil_group.set("currentDisplayedPage", "1")
+            soil_group.set("groupName", "group_soil")
+            
+            # Format soil identifiers
+            soil_identifiers = [f"soil_{soil}" for soil in soils]
+            
+            # Create entry for soil optical property
+            soil_entry = ET.SubElement(soil_group, "DartSequencerDescriptorEntry")
+            soil_entry.set("args", ";".join(soil_identifiers))
+            soil_entry.set("propertyName", "Maket.Soil.OpticalPropertyLink.ident")
+            soil_entry.set("type", "enumerate")
+            
+            # Create entry for indexFctPhase
+            phase_indices = [str(i) for i in range(len(soils))]  #
+            phase_entry = ET.SubElement(soil_group, "DartSequencerDescriptorEntry")
+            phase_entry.set("args", ";".join(phase_indices))
+            phase_entry.set("propertyName", "Maket.Soil.OpticalPropertyLink.indexFctPhase")
+            phase_entry.set("type", "enumerate")
+            
+            print(f"Added soil entries with identifiers: {', '.join(soil_identifiers)}")
+            print(f"Added phase indices: {', '.join(phase_indices)}")
     
     # Add DartSequencerPreferences
     preferences = ET.SubElement(descriptor, "DartSequencerPreferences")
@@ -233,10 +328,10 @@ def create_sequence_xml(config_path):
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write(xmlstr[xmlstr.find("\n")+1:])
     
-    print(f"sequence.xml has been generated successfully at: {output_path}")
+    print(f"sequence.xml has been generated successfully.")
 
 if __name__ == "__main__":
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "config.json")
-    create_sequence_xml(config_path) 
+    create_sequence_xml(config_path)

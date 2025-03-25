@@ -92,31 +92,8 @@ def determine_soil_name(config_path, simulation_path):
     return soil_names[0]
 
 def determine_thermal_function(simulation_path, soil_name):
-    """Determine which thermal function to use for a given soil"""
-    thermal_functions = get_thermal_functions_from_coeff_diff(simulation_path)
-    
-    if not thermal_functions:
-        print("Warning: No thermal functions found in coeff_diff.xml")
-        return "Temp_soil"
-    
-    print(f"Found {len(thermal_functions)} thermal functions in coeff_diff.xml:")
-    for tf in thermal_functions:
-        print(f"  - {tf}")
-    
-    # If there's a thermal function that matches the soil name pattern, use it
-    soil_id = soil_name.split("_")[-1]
-    matching_functions = [tf for tf in thermal_functions if f"soil_{soil_id}" in tf]
-    
-    if matching_functions:
-        return matching_functions[0]
-    
-    # Look for generic soil temperature function
-    soil_functions = [tf for tf in thermal_functions if "soil" in tf.lower()]
-    if soil_functions:
-        return soil_functions[0]
-    
     # Default to first function or Temp_soil
-    return thermal_functions[0] if thermal_functions else "Temp_soil"
+    return "Temp_soil"
 
 def update_maket_xml(config_path):
     """Update maket.xml with appropriate soil name and thermal properties from coeff_diff.xml"""

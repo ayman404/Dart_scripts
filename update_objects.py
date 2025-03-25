@@ -266,7 +266,7 @@ def update_object_3d_xml(config_path):
         # Remove the first line (xml declaration) since we already wrote it
         f.write(xml_str[xml_str.find("\n")+1:])
     
-    print(f"Updated object_3d.xml has been generated at: {output_path}")
+    print(f"object_3d.xml has been Updated")
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))

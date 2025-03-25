@@ -72,8 +72,8 @@ def save_tiff_and_props():
     pathsavesim = output_tif_path
     
     # Debug: Print paths
-    print(f"Reading from: {pathsim}")
-    print(f"Saving to: {pathsavesim}")
+    #print(f"Reading from: {pathsim}")
+    #print(f"Saving to: {pathsavesim}")
     
     # Check if sequence directory exists
     if not os.path.exists(pathsim):
@@ -124,7 +124,7 @@ def save_tiff_and_props():
         # Save props.json
         with open(os.path.join(savedirectory, "props.json"), "w") as outfile:
             json.dump(props_dict, outfile)
-        print(f"Created props.json in: {savedirectory}")
+        print(f"Created props.json")
 
         # Find available bands
         band_dir = os.path.join(pathsim, seq_dir, 'output')

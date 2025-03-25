@@ -168,38 +168,14 @@ def update_coeff_diff_xml(config_path):
         "isV2Z": "0",
         "useCm": "0"
     }
-    
-    # Add leaf entries if chlorophyl or water_thickness is true
-    if params_to_vary['chlorophyl'] or params_to_vary['water_thickness']:
-        for i in range(num_trees):
-            leaf = create_lambertian_multi(
-                f"leaf_{i}",
-                "reflect_equal_1_trans_equal_0_0",
-                "Lambertian_vegetation.db",
-                True,
-                prospect_params
-            )
-            lambertian_multi_functions.append(leaf)
-    else:
-        # Add a single default leaf entry for uniform parameters
-        leaf = create_lambertian_multi(
-            "leaf",
-            "reflect_equal_1_trans_equal_0_0",
-            "Lambertian_vegetation.db",
-            True,
-            prospect_params
-        )
-        lambertian_multi_functions.append(leaf)
-    
-    # Add trunk entry
-    trunk = create_lambertian_multi("trunk", "bark_spruce", "Lambertian_vegetation.db")
-    lambertian_multi_functions.append(trunk)
-    
+
     # Handle soil entries based on multi_sol setting
     if config['simulation_settings']['multi_sol']:
         # Check soil factor path and get spectral intervals
         if check_soil_factor_path(config_path):
             spectral_info = get_spectral_intervals(simulation_path)
+            for band_num, mode in sorted(spectral_info.items()):
+                print(f"  Band {band_num}: spectralDartMode = {'T' if mode == 2 else 'R'}")
             if spectral_info:
                 soil_factor_path = config['paths']['soil_factor_path']
                 # Get all soil folders
@@ -235,6 +211,34 @@ def update_coeff_diff_xml(config_path):
             "Lambertian_mineral.db"
         )
         lambertian_multi_functions.append(soil)
+
+    # Add leaf entries if chlorophyl or water_thickness is true
+    if params_to_vary['chlorophyl'] or params_to_vary['water_thickness']:
+        for i in range(num_trees):
+            leaf = create_lambertian_multi(
+                f"leaf_{i}",
+                "reflect_equal_1_trans_equal_0_0",
+                "Lambertian_vegetation.db",
+                True,
+                prospect_params
+            )
+            lambertian_multi_functions.append(leaf)
+    else:
+        # Add a single default leaf entry for uniform parameters
+        leaf = create_lambertian_multi(
+            "leaf",
+            "reflect_equal_1_trans_equal_0_0",
+            "Lambertian_vegetation.db",
+            True,
+            prospect_params
+        )
+        lambertian_multi_functions.append(leaf)
+    
+    # Add trunk entry
+    trunk = create_lambertian_multi("trunk", "bark_spruce", "Lambertian_vegetation.db")
+    lambertian_multi_functions.append(trunk)
+    
+
     
     # Add other required empty sections
     for section in ["HapkeSpecularMultiFunctions", "RPVMultiFunctions",
@@ -278,7 +282,7 @@ def update_coeff_diff_xml(config_path):
         # Remove the first line (xml declaration) since we already wrote it
         f.write(xmlstr[xmlstr.find("\n")+1:])
     
-    print(f"Updated coeff_diff.xml has been generated at: {output_path}")
+    print(f"coeff_diff.xml has been Updated")
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))

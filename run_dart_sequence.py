@@ -1,13 +1,9 @@
 import os
 import sys
 import json
-from subprocess import Popen, STDOUT, PIPE
+from subprocess import Popen, STDOUT
 import subprocess
 import random as rd
-import time
-import xml.etree.ElementTree as ET
-import shutil
-from preprocess_soils import get_spectral_intervals, check_soil_band_files
 
 def load_config():
     """Load configuration from config.json file"""
@@ -50,8 +46,12 @@ def get_dart_paths(simulation_path):
             user_data_index = i
     
     if dart_index == -1:
-        # If we can't find DART, raise an error
-        raise ValueError("Error: 'DART' not found in the path. Please check the simulation path and try again.")
+        # If we can't find DART, let's use reasonable defaults
+        print("Warning: Could not find 'DART' in the path. Using defaults.")
+        if sys.platform == 'win32':
+            base_path = "C:\\Users\\LENOVO\\DART"
+        else:
+            base_path = "/Users/LENOVO/DART"
     else:
         # Create the base path including the drive letter if on Windows
         if sys.platform == 'win32' and path_parts[0].endswith(':'):
@@ -112,15 +112,9 @@ def run_simulation(simulation, DART_HOME, DART_LOCAL, DART_TOOLS, direction=True
     for step in steps:
         cmd = (['bash'] if sys.platform != 'win32' else ['cmd', '/c']) + [step + ext, simulation.split(os.sep + 'simulations' + os.sep, 1)[-1]]
         print(f"Executing command: {cmd}")
-        try:
-            process = Popen(cmd, cwd=DART_TOOLS, env=env, stdout=log, stderr=STDOUT, shell=False, universal_newlines=True)
-            if process.wait(timeout=600) > 0:  # Add timeout of 10 minutes
-                print(f"Error: Command failed with code {process.returncode}")
-                break
-        except subprocess.TimeoutExpired:
-            process.kill()
-            print(f"Error: Command timed out after 10 minutes")
-            return 1
+        process = Popen(cmd, cwd=DART_TOOLS, env=env, stdout=log, stderr=STDOUT, shell=False, universal_newlines=True)
+        if process.wait() > 0:
+            break
     log.close()
     return 0 if process is None else process.returncode
 
@@ -139,6 +133,8 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
     
     try:
         # Extract just the simulation name and sequence.xml
+        # From path like "C:/Users/LENOVO/DART/user_data/simulations/test/sequence.xml"
+        # We want just "test/sequence.xml"
         sep = '\\' if sys.platform == 'win32' else '/'
         parts = sequencexml.split(f'simulations{sep}')
         if len(parts) != 2:
@@ -150,8 +146,7 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
         print(f"Error processing path: {str(e)}")
         return 1
     
-    log_file = 'run.log'
-    log = open(log_file, 'w')
+    log = open('run.log', 'w')
     
     # Construct command differently for Windows vs Linux
     if sys.platform == 'win32':
@@ -160,347 +155,13 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
         cmd = ['bash', os.path.join(DART_TOOLS, f"dart-sequence{ext}"), rel_path, state]
     
     print(f"Executing sequence command: {cmd}")
-    print(f"Working directory: {DART_TOOLS}")
-    print(f"Environment variables: DART_HOME={DART_HOME}, DART_LOCAL={DART_LOCAL}")
     
-    try:
-        # Use subprocess.Popen with real-time output handling
-        process = subprocess.Popen(
-            cmd, 
-            env=env, 
-            shell=False, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.STDOUT, 
-            stdin=subprocess.PIPE,  # Add stdin pipe for interaction
-            universal_newlines=True,
-            bufsize=1  # Line buffered
-        )
-        
-        print("Process started. Waiting for output...")
-        
-        # Read and print output in real-time
-        for line in process.stdout:
-            print(line, end='')  # Print to console
-            log.write(line)      # Write to log file
-            
-            # Automatically respond to "Press any key to continue..." and "Terminate batch job (Y/N)?"
-            if "Press any key to continue" in line or "Terminate batch job" in line:
-                process.stdin.write('\n')
-                process.stdin.flush()
-            
-            # Terminate process if "Total processing time" is detected
-            if "Total processing time" in line:
-                print("Total processing time detected. Terminating process.")
-                process.terminate()
-                break
-            
-        # Wait for process to complete with timeout
-        return_code = process.wait(timeout=1800)  # 30 minute timeout
-        
-        #print(f"Process completed with return code: {return_code}")
-        log.close()
-        return return_code
-        
-    except subprocess.TimeoutExpired:
-        print("Error: Process timed out after 30 minutes")
-        process.kill()
-        log.write("Process timed out after 30 minutes\n")
-        log.close()
-        return 1
-    except Exception as e:
-        print(f"Error executing command: {str(e)}")
-        log.write(f"Error executing command: {str(e)}\n")
-        log.close()
-        return 1
-
-def get_available_soils(config_path):
-    """Get list of available soil names based on configuration"""
-    try:
-        # Read configuration
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-        
-        # If multi_sol is not enabled, return None
-        if not config['simulation_settings']['multi_sol']:
-            return None
-            
-        soil_factor_path = config['paths']['soil_factor_path']
-        simulation_path = config['paths']['simulation_path']
-        
-        # Check if soil factor path exists
-        if not os.path.exists(soil_factor_path) or not os.path.isdir(soil_factor_path):
-            print(f"Warning: Soil factor directory not found: {soil_factor_path}")
-            return None
-        
-        # Get spectral information for validation
-        spectral_info = get_spectral_intervals(simulation_path)
-        if not spectral_info:
-            print("Warning: Could not get spectral intervals information")
-            return None
-        
-        # Check soil folders and validate
-        valid_soils = check_soil_band_files(soil_factor_path, spectral_info)
-        if not valid_soils:
-            print("Warning: No valid soil folders found with correct number of txt files")
-            return None
-            
-        return valid_soils
+    process = Popen(cmd, env=env, shell=False, stdin=subprocess.PIPE, stdout=log, stderr=STDOUT, universal_newlines=True)
+    process.wait()  # Wait for the process to complete
     
-    except Exception as e:
-        print(f"Error getting available soils: {str(e)}")
-        return None
-
-def update_maket_xml_soil(simulation_path, soil_name):
-    """Update the maket.xml file to use a specific soil"""
-    try:
-        # Path to maket.xml
-        maket_path = os.path.join(simulation_path, "input", "maket.xml")
-        
-        # Check if file exists
-        if not os.path.exists(maket_path):
-            print(f"Error: maket.xml not found at {maket_path}")
-            return False
-        
-        # Create backup of original file
-        backup_path = maket_path + ".backup"
-        if not os.path.exists(backup_path):
-            shutil.copy2(maket_path, backup_path)
-        
-        # Parse XML
-        tree = ET.parse(maket_path)
-        root = tree.getroot()
-        
-        # Find OpticalPropertyLink
-        soil_link = root.find(".//OpticalPropertyLink")
-        if soil_link is None:
-            print("Error: Could not find OpticalPropertyLink in maket.xml")
-            return False
-        
-        # Update soil reference
-        current_soil = soil_link.get("ident")
-        new_soil = f"soil_{soil_name}"
-        print(f"Updating soil in maket.xml from '{current_soil}' to '{new_soil}'")
-        soil_link.set("ident", new_soil)
-        
-        # Write back to file
-        tree.write(maket_path, encoding='UTF-8', xml_declaration=True)
-        return True
-        
-    except Exception as e:
-        print(f"Error updating maket.xml: {str(e)}")
-        return False
-
-def restore_original_maket_xml(simulation_path):
-    """Restore the original maket.xml file from backup"""
-    maket_path = os.path.join(simulation_path, "input", "maket.xml")
-    backup_path = maket_path + ".backup"
-    
-    if os.path.exists(backup_path):
-        shutil.copy2(backup_path, maket_path)
-        print("Restored original maket.xml")
-        return True
-    else:
-        print("Warning: No backup file found for maket.xml")
-        return False
-
-def safe_rename_directory(old_path, new_path):
-    """Safely rename a directory by copying files and then deleting the old directory"""
-    try:
-        # Try direct rename first (faster)
-        os.rename(old_path, new_path)
-        return True
-    except (PermissionError, OSError):
-        print(f"Direct rename failed for {old_path}, trying copy and delete approach...")
-        try:
-            # If rename fails, copy and delete
-            if os.path.exists(new_path):
-                shutil.rmtree(new_path)
-            shutil.copytree(old_path, new_path)
-            # Wait a moment to ensure all file operations complete
-            time.sleep(1)
-            try:
-                shutil.rmtree(old_path)
-            except:
-                print(f"Warning: Could not delete original directory {old_path} after copying")
-            return True
-        except Exception as e:
-            print(f"Error copying directory: {str(e)}")
-            return False
-
-def run_for_all_soils(config, simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS):
-    """Run simulation and sequence for all available soils"""
-    # Get the config path
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(script_dir, "config.json")
-    
-    # Get available soils
-    soils = get_available_soils(config_path)
-    
-    if not soils or len(soils) == 0:
-        print("No valid soils found. Using default soil configuration.")
-        # Run with default soil settings
-        sequence_xml = os.path.join(simulation_path, "sequence.xml")
-        
-        # Ensure consistent path separators
-        if sys.platform == 'win32':
-            sequence_xml = sequence_xml.replace('/', '\\')
-        
-        # First run the root simulation
-        print("Running root simulation before executing sequence...")
-        sim_result = run_simulation(simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS)
-        
-        if sim_result != 0:
-            print(f"Error: Root simulation failed with return code: {sim_result}")
-            return False
-        
-        print("Root simulation completed successfully. Proceeding with sequence...")
-        
-        # Now run the sequence
-        result = run_sequence(sequence_xml, DART_HOME, DART_LOCAL, DART_TOOLS)
-        
-        if result == 0:
-            print("Sequence completed successfully")
-            return True
-        else:
-            print(f"Sequence failed with return code: {result}")
-            return False
-    else:
-        print(f"Found {len(soils)} valid soil(s). Running simulation for each soil.")
-        all_successful = True
-        
-        # Keep track of original output folders to prevent overwriting
-        sequence_dir_base = os.path.join(simulation_path, "sequence")
-        
-        # Run for each soil
-        for i, soil in enumerate(soils):
-            print(f"\n=== Processing Soil {i+1}/{len(soils)}: {soil} ===")
-            
-            # Update maket.xml to use this soil
-            if not update_maket_xml_soil(simulation_path, soil):
-                print(f"Skipping soil '{soil}' due to error updating maket.xml")
-                all_successful = False
-                continue
-            
-            # Backup existing sequence folders by renaming them with soil name if needed
-            if os.path.exists(sequence_dir_base):
-                # Rename any existing sequence_i folders to include the current soil name
-                if i > 0:  # Only needed after first soil
-                    rename_sequence_folders(sequence_dir_base, soils[i-1], soils)
-            else:
-                # Create sequence directory if it doesn't exist
-                os.makedirs(sequence_dir_base, exist_ok=True)
-            
-            sequence_xml = os.path.join(simulation_path, "sequence.xml")
-            if sys.platform == 'win32':
-                sequence_xml = sequence_xml.replace('/', '\\')
-            
-            # Run the root simulation
-            print(f"Running root simulation for soil '{soil}'...")
-            sim_result = run_simulation(simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS)
-            
-            if sim_result != 0:
-                print(f"Error: Root simulation failed for soil '{soil}' with return code: {sim_result}")
-                all_successful = False
-                continue
-            
-            # Run the sequence
-            print(f"Running sequence for soil '{soil}'...")
-            result = run_sequence(sequence_xml, DART_HOME, DART_LOCAL, DART_TOOLS)
-            
-            if result == 0:
-                print(f"Sequence completed successfully for soil '{soil}'")
-                
-                # For the last soil, rename its sequence folders immediately
-                if i == len(soils) - 1:
-                    print(f"Renaming sequence folders for the last soil: {soil}")
-                    rename_sequence_folders(sequence_dir_base, soil, soils)
-            else:
-                print(f"Sequence failed for soil '{soil}' with return code: {result}")
-                all_successful = False
-            
-            # Give the file system a brief moment to complete operations
-            time.sleep(1)
-        
-        # Restore original maket.xml
-        restore_original_maket_xml(simulation_path)
-        
-        # Verify all sequence folders have been renamed correctly
-        check_and_fix_sequence_folders(sequence_dir_base, soils)
-        
-        # Print summary of where results are stored
-        print("\n=== Simulation Complete ===")
-        print(f"All soil sequence outputs are in: {sequence_dir_base}")
-        print("Sequence folders are renamed to include soil names:")
-        print("  Format: sequence_[soil_name]_[sequence_number]")
-        
-        return all_successful
-
-def rename_sequence_folders(sequence_dir, soil_name, all_soils):
-    """Rename sequence folders to include soil name"""
-    if not os.path.exists(sequence_dir):
-        return
-    
-    print(f"Looking for sequence folders to rename for soil: {soil_name}")
-    renamed_count = 0
-    
-    for item in os.listdir(sequence_dir):
-        # Find sequence folders that don't already have a soil name in them
-        if item.startswith("sequence_") and not any(s in item for s in all_soils):
-            old_path = os.path.join(sequence_dir, item)
-            # Get the sequence number from the folder name
-            parts = item.split("_")
-            if len(parts) >= 2:
-                seq_num = parts[-1]
-                new_path = os.path.join(sequence_dir, f"sequence_{soil_name}_{seq_num}")
-                
-                if os.path.exists(new_path):
-                    try:
-                        shutil.rmtree(new_path)
-                    except Exception as e:
-                        print(f"Warning: Could not remove existing directory {new_path}: {str(e)}")
-                        continue
-                
-                print(f"Renaming {old_path} to {new_path}")
-                if not safe_rename_directory(old_path, new_path):
-                    print(f"Warning: Failed to rename {old_path} to {new_path}")
-                else:
-                    renamed_count += 1
-    
-    print(f"Renamed {renamed_count} sequence folders for soil: {soil_name}")
-
-def check_and_fix_sequence_folders(sequence_dir, all_soils):
-    """Final check to ensure all sequence folders are properly named"""
-    if not os.path.exists(sequence_dir):
-        return
-    
-    # Check if any sequence folders remain without soil names
-    unnamed_folders = []
-    for item in os.listdir(sequence_dir):
-        if item.startswith("sequence_") and not any(s in item for s in all_soils):
-            unnamed_folders.append(item)
-    
-    if unnamed_folders:
-        print(f"\nWARNING: Found {len(unnamed_folders)} sequence folders without soil names:")
-        for folder in unnamed_folders:
-            print(f"  - {folder}")
-        print("These may be from the last soil run. Attempting to fix...")
-        
-        # Try to rename them with the last soil name
-        if all_soils:
-            last_soil = all_soils[-1]
-            for folder in unnamed_folders:
-                old_path = os.path.join(sequence_dir, folder)
-                parts = folder.split("_")
-                if len(parts) >= 2:
-                    seq_num = parts[-1]
-                    new_path = os.path.join(sequence_dir, f"sequence_{last_soil}_{seq_num}")
-                    
-                    if os.path.exists(new_path):
-                        continue  # Skip if target already exists
-                    
-                    print(f"Fixing: Renaming {old_path} to {new_path}")
-                    if not safe_rename_directory(old_path, new_path):
-                        print(f"Warning: Failed to rename {old_path} to {new_path}")
+    print("Finished batch sequence")
+    log.close()
+    return process.returncode
 
 def main():
     # Load configuration
@@ -519,63 +180,32 @@ def main():
     DART_LOCAL = dart_paths['DART_LOCAL']
     DART_TOOLS = dart_paths['DART_TOOLS']
     
-    # Check if the sequence file exists
+    # Run the sequence
+    # Use the full simulation path for sequence.xml
     sequence_xml = os.path.join(simulation_path, "sequence.xml")
+    
+    # Ensure consistent path separators
     if sys.platform == 'win32':
         sequence_xml = sequence_xml.replace('/', '\\')
     
-    if not os.path.exists(sequence_xml):
-        print(f"Error: Sequence file not found at {sequence_xml}")
-        return
-    
-    # Check if the DART tools directory exists and contains the required script
-    script_path = os.path.join(DART_TOOLS, "dart-sequence" + ('.bat' if sys.platform == 'win32' else '.sh'))
-    if not os.path.exists(script_path):
-        print(f"Error: Required script not found at {script_path}")
-        return
-    
-    print(f"Running sequence from: {sequence_xml}")
-    print(f"DART_HOME: {DART_HOME}")
-    print(f"DART_LOCAL: {DART_LOCAL}")
-    print(f"DART_TOOLS: {DART_TOOLS}")
-    
-    # Check if we should use multiple soils
-    if config['simulation_settings']['multi_sol']:
-        success = run_for_all_soils(config, simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS)
-    else:
-        # First run the root simulation
-        print("Running root simulation before executing sequence...")
-        sim_result = run_simulation(simulation_path, DART_HOME, DART_LOCAL, DART_TOOLS)
-        
-        if sim_result != 0:
-            print(f"Error: Root simulation failed with return code: {sim_result}")
-            return
-        
-        print("Root simulation completed successfully. Proceeding with sequence...")
-        
-        # Now run the sequence
+    if os.path.exists(sequence_xml):
+        #print(f"Running sequence from: {sequence_xml}")
+        #print(f"DART_HOME: {DART_HOME}")
+        #print(f"DART_LOCAL: {DART_LOCAL}")
+        #print(f"DART_TOOLS: {DART_TOOLS}")
         result = run_sequence(sequence_xml, DART_HOME, DART_LOCAL, DART_TOOLS)
         
-        success = (result == 0)
-        if success:
+        if result == 0:
             print("Sequence completed successfully")
+            
+            # Save results if configured
+            if config['simulation_settings']['save_result_to_tif_json']:
+                save_script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saveTIFF.py")
+                os.system(f"python {save_script_path} {rd.random()}")
         else:
             print(f"Sequence failed with return code: {result}")
-    
-    # Save results if configured and simulation was successful
-    if config['simulation_settings']['save_result_to_tif_json']:
-        # Use the saveTIFF.py script in the same directory
-        save_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saveTIFF.py")
-        print(f"Saving TIFF outputs using: {save_script_path}")
-        try:
-            # Import and run directly instead of using os.system
-            from saveTIFF import save_tiff_and_props
-            save_tiff_and_props()
-            print("TIFF saving completed successfully")
-        except Exception as e:
-            print(f"Error saving TIFF outputs: {str(e)}")
-            # Fall back to external script call if direct import fails
-            os.system(f"python {save_script_path}")
+    else:
+        print(f"Error: Sequence file not found at {sequence_xml}")
 
 if __name__ == "__main__":
-    main()
+    main() 
