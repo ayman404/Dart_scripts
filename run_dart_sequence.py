@@ -74,7 +74,7 @@ def get_dart_paths(simulation_path):
     if sys.platform == 'win32':
         tools_subpath = os.path.join('tools', 'windows')
     else:
-        tools_subpath = 'tools'
+        tools_subpath = os.path.join('tools', 'linux')
     
     #print(f"DART_HOME: {base_path}")
     #print(f"DART_LOCAL: {user_data_path}")
@@ -242,7 +242,8 @@ def main():
 
         # Save results if configured
         if config['simulation_settings']['save_result_to_tif_json']:
-                save_script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saveTIFF.py")
+                save_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saveTIFF.py")
+                print(f"Running save script: {save_script_path}")
                 os.system(f"python {save_script_path} {rd.random()}")
 
     else:
