@@ -5,6 +5,32 @@ This folder contains scripts for updating DART simulation files based on configu
 1. update_coeff_diff.py - Updates optical and thermal properties
 2. update_objects.py - Updates 3D object configurations
 
+Installation
+-----------
+These scripts require several Python packages to run properly. To install all dependencies:
+
+1. Make sure you have Python 3.7+ installed
+2. Install the required packages using pip:
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. For rasterio and GDAL installation troubleshooting:
+   - Windows users may need to install from wheels: https://www.lfd.uci.edu/~gohlke/pythonlibs/
+   - Linux/Mac users might need additional system dependencies:
+     ```
+     # For Ubuntu/Debian
+     sudo apt-get install libgdal-dev
+     
+     # For Mac (using Homebrew)
+     brew install gdal
+     ```
+
+4. Verify installation by running a simple test:
+   ```
+   python -c "import rasterio; import numpy; print('Installation successful!')"
+   ```
+
 Configuration (config.json)
 --------------------------
 The scripts use a shared configuration file (config.json) with the following structure:
@@ -100,4 +126,4 @@ Usage
 2. Run update_coeff_diff.py to generate optical and thermal properties
 3. Run update_objects.py to generate 3D object configurations
 
-Both scripts can be run independently but typically should be run in sequence as the object definitions reference the properties defined in coeff_diff.xml. 
+Both scripts can be run independently but typically should be run in sequence as the object definitions reference the properties defined in coeff_diff.xml.

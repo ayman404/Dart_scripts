@@ -1,0 +1,13 @@
+# Core requirements
+numpy>=1.19.0
+rasterio>=1.2.0
+matplotlib>=3.3.0
+scipy>=1.5.0
+pyyaml>=5.4.0
+lxml>=4.6.0
+
+# Optional but recommended
+tqdm>=4.50.0  # For progress bars
+pytest>=6.0.0  # For testing
+gdal>=3.0.0  # May be required for certain rasterio operations
+pillow>=8.0.0  # For image processing

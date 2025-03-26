@@ -81,11 +81,15 @@ def count_trees_in_position_file(position_file_path):
 
 def generate_random_values(nbr_simulation, num_trees):
     """Generate random values for parameters."""
-    # Generate Cab values (chlorophyll content)
-    cab_values = [str(rd.random() * 70 + 20) for _ in range(nbr_simulation)]
+    # Generate Cab values (chlorophyll content) - different for each tree
+    cab_values = []
+    for _ in range(num_trees):
+        cab_values.append([str(rd.random() * 70 + 20) for _ in range(nbr_simulation)])
     
-    # Generate Cw values (water content)
-    cw_values = [str(rd.random() * 0.04 + 0.01) for _ in range(nbr_simulation)]
+    # Generate Cw values (water content) - different for each tree
+    cw_values = []
+    for _ in range(num_trees):
+        cw_values.append([str(rd.random() * 0.04 + 0.01) for _ in range(nbr_simulation)])
     
     # Generate temperature values
     temp_values = []
@@ -188,7 +192,7 @@ def create_sequence_xml(config_path):
                 leaf_temp_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
                 leaf_temp_args = [temp_list[i + 1] for temp_list in temp_values]
                 leaf_temp_entry.set("args", ";".join(leaf_temp_args))
-                leaf_temp_entry.set("propertyName", f"Coeff_diff.Temperatures.ThermalFunction[{i + 1}].meanT")
+                leaf_temp_entry.set("propertyName", f"Coeff_diff.Temperatures.ThermalFunction[{1 + 2 * i}].meanT")
                 leaf_temp_entry.set("type", "enumerate")
             
             # Trunk temperatures
@@ -196,14 +200,16 @@ def create_sequence_xml(config_path):
                 trunk_temp_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
                 trunk_temp_args = [temp_list[i + num_trees + 1] for temp_list in temp_values]
                 trunk_temp_entry.set("args", ";".join(trunk_temp_args))
-                trunk_temp_entry.set("propertyName", f"Coeff_diff.Temperatures.ThermalFunction[{i + num_trees + 1}].meanT")
+                trunk_temp_entry.set("propertyName", f"Coeff_diff.Temperatures.ThermalFunction[{2 + 2 * i}].meanT")
                 trunk_temp_entry.set("type", "enumerate")
     
     # Chlorophyll (Cab) entries
     if params_to_vary['chlorophyl']:
         for i in range(num_trees):
             cab_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
-            cab_entry.set("args", ";".join(cab_values))
+            # Use tree-specific chlorophyll values
+            tree_cab_values = cab_values[i]
+            cab_entry.set("args", ";".join(tree_cab_values))
             # Use offset for LambertianMulti index
             lambertian_index = i + offset
             cab_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{lambertian_index}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cab")
@@ -213,7 +219,9 @@ def create_sequence_xml(config_path):
     if params_to_vary['water_thickness']:
         for i in range(num_trees):
             cw_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
-            cw_entry.set("args", ";".join(cw_values))
+            # Use tree-specific water content values
+            tree_cw_values = cw_values[i]
+            cw_entry.set("args", ";".join(tree_cw_values))
             # Use offset for LambertianMulti index
             lambertian_index = i + offset
             cw_entry.set("propertyName", f"Coeff_diff.Surfaces.LambertianMultiFunctions.LambertianMulti[{lambertian_index}].Lambertian.ProspectExternalModule.ProspectExternParameters.Cw")

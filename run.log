@@ -80,32 +80,32 @@ DartSequencerParameter n 14
 
 DartSequencerParameter n 15
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[2].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[3].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 16
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[3].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[5].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 17
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[4].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[7].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 18
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[5].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[2].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 19
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[6].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[4].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 20
  -> numGroupe = 1
- -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[7].meanT
+ -> nomParam  = Coeff_diff.Temperatures.ThermalFunction[6].meanT
  -> nbValue   = 2
 
 DartSequencerParameter n 21
@@ -164,3 +164,4 @@ DartSequencerParameter n 31
  -> nbValue   = 3
  -> Base simulation : C:\Users\LENOVO\DART\user_data\simulations\test
            DartSequenceRunner 2.0
+ - Total processing time : 0 hours 2 minutes 54 secondes 763 millisecondes 

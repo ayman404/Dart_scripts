@@ -22,7 +22,7 @@ def extract_size_from_config(content):
     if size_match:
         columns = int(size_match.group(1))
         rows = int(size_match.group(2))
-        print(f"Extracted Size: Columns={columns}, Rows={rows}")
+        #print(f"Extracted Size: Columns={columns}, Rows={rows}")
         return columns, rows
     else:
         # Alternative format
@@ -113,7 +113,11 @@ def save_tiff_and_props():
                             
                             if len(param_parts) > 1 and len(value_parts) > 1:
                                 param_name = param_parts[1].split('.')[-1]
-                                param_value = float(value_parts[1])
+                                # Try to convert to float, but keep as string if not possible
+                                try:
+                                    param_value = float(value_parts[1])
+                                except ValueError:
+                                    param_value = value_parts[1].strip()  # Keep as string but strip whitespace
                                 props_dict[param_name + str(k//2)] = param_value
                         except (ValueError, IndexError) as e:
                             print(f"Error parsing line {k}: {e}")
@@ -197,7 +201,7 @@ def save_tiff_and_props():
             
             try:
                 img_data = np.fromfile(os.path.join(band_folder, img_name), dtype=np.double)
-                print(f"Band: {band}, Min: {np.min(img_data)}, Max: {np.max(img_data)}")
+                #print(f"Band: {band}, Min: {np.min(img_data)}, Max: {np.max(img_data)}")
                 
                 img_data = np.reshape(img_data, (rows, columns))
                 
@@ -205,11 +209,11 @@ def save_tiff_and_props():
                 if is_thermal or folder_type == "Tapp":
                     # Scale temperature values appropriately
                     img_data_16bit = (img_data * 100).astype(np.uint16)  # Different scaling for temperature
-                    print(f"Using thermal scaling for {band}")
+                    #print(f"Using thermal scaling for {band}")
                 else:
                     # Regular reflectance scaling
                     img_data_16bit = (10000 * img_data).astype(np.uint16)
-                    print(f"Using reflectance scaling for {band}")
+                    #print(f"Using reflectance scaling for {band}")
                     
                 bands_arr.append(img_data_16bit)
             except Exception as e:
@@ -243,7 +247,7 @@ def save_tiff_and_props():
                     dst.write(band_data, i + 1)
                     dst.set_band_description(i + 1, band_names[i])
             
-            print(f"Successfully created GeoTIFF for {seq_dir}: {imagename}")
+            print(f"Successfully created GeoTIFF for {seq_dir}.")
         except Exception as e:
             print(f"Error creating GeoTIFF for {seq_dir}: {e}")
 

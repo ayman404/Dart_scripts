@@ -133,8 +133,6 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
     
     try:
         # Extract just the simulation name and sequence.xml
-        # From path like "C:/Users/LENOVO/DART/user_data/simulations/test/sequence.xml"
-        # We want just "test/sequence.xml"
         sep = '\\' if sys.platform == 'win32' else '/'
         parts = sequencexml.split(f'simulations{sep}')
         if len(parts) != 2:
@@ -146,7 +144,8 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
         print(f"Error processing path: {str(e)}")
         return 1
     
-    log = open('run.log', 'w')
+    log_file = 'run.log'
+    log = open(log_file, 'w')
     
     # Construct command differently for Windows vs Linux
     if sys.platform == 'win32':
@@ -155,13 +154,58 @@ def run_sequence(sequencexml, DART_HOME, DART_LOCAL, DART_TOOLS, start=True):
         cmd = ['bash', os.path.join(DART_TOOLS, f"dart-sequence{ext}"), rel_path, state]
     
     print(f"Executing sequence command: {cmd}")
+    #print(f"Working directory: {DART_TOOLS}")
+    #print(f"Environment variables: DART_HOME={DART_HOME}, DART_LOCAL={DART_LOCAL}")
     
-    process = Popen(cmd, env=env, shell=False, stdin=subprocess.PIPE, stdout=log, stderr=STDOUT, universal_newlines=True)
-    process.wait()  # Wait for the process to complete
-    
-    print("Finished batch sequence")
-    log.close()
-    return process.returncode
+    try:
+        # Use subprocess.Popen with real-time output handling
+        process = subprocess.Popen(
+            cmd, 
+            env=env, 
+            shell=False, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.STDOUT, 
+            stdin=subprocess.PIPE,  # Add stdin pipe for interaction
+            universal_newlines=True,
+            bufsize=1  # Line buffered
+        )
+        
+        print("Process started. Waiting for output...")
+        
+        # Read and print output in real-time
+        for line in process.stdout:
+            print(line, end='')  # Print to console
+            log.write(line)      # Write to log file
+            
+            # Automatically respond to "Press any key to continue..." and "Terminate batch job (Y/N)?"
+            if "Press any key to continue" in line or "Terminate batch job" in line:
+                process.stdin.write('\n')
+                process.stdin.flush()
+            
+            # Terminate process if "Total processing time" is detected
+            if "Total processing time" in line:
+                print("Total processing time detected. Terminating process.")
+                process.terminate()
+                break
+            
+        # Wait for process to complete with timeout
+        return_code = process.wait(timeout=1800)  # 30 minute timeout
+        
+        #print(f"Process completed with return code: {return_code}")
+        log.close()
+        return return_code
+        
+    except subprocess.TimeoutExpired:
+        print("Error: Process timed out after 30 minutes")
+        process.kill()
+        log.write("Process timed out after 30 minutes\n")
+        log.close()
+        return 1
+    except Exception as e:
+        print(f"Error executing command: {str(e)}")
+        log.write(f"Error executing command: {str(e)}\n")
+        log.close()
+        return 1
 
 def main():
     # Load configuration
@@ -195,15 +239,12 @@ def main():
         #print(f"DART_TOOLS: {DART_TOOLS}")
         result = run_sequence(sequence_xml, DART_HOME, DART_LOCAL, DART_TOOLS)
         
-        if result == 0:
-            print("Sequence completed successfully")
-            
-            # Save results if configured
-            if config['simulation_settings']['save_result_to_tif_json']:
+
+        # Save results if configured
+        if config['simulation_settings']['save_result_to_tif_json']:
                 save_script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saveTIFF.py")
                 os.system(f"python {save_script_path} {rd.random()}")
-        else:
-            print(f"Sequence failed with return code: {result}")
+
     else:
         print(f"Error: Sequence file not found at {sequence_xml}")
 
