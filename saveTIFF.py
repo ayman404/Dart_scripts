@@ -183,7 +183,7 @@ def save_tiff_and_props():
             try:
                 with open(os.path.join(band_folder, header_name), "rb") as header_file:
                     header_content = header_file.read().decode('utf-8', errors='ignore')
-                    columns, rows = extract_size_from_config(header_content)
+                    rows, columns = extract_size_from_config(header_content)
             except Exception as e:
                 print(f"Error reading header file for {band}: {e}")
                 continue

@@ -2124,5 +2124,4 @@ DartSequencerParameter n 423
  -> nbValue   = 3
  -> Base simulation : C:\Users\LENOVO\DART\user_data\simulations\simulation_test
            DartSequenceRunner 2.0
-Sequence finished with errors/warnings ; file "C:\Users\LENOVO\DART\user_data\simulations\simulation_test\sequence_Sequence_error.log" not empty
- - Total processing time : 0 hours 0 minutes 2 secondes 750 millisecondes 
+ - Total processing time : 0 hours 6 minutes 5 secondes 27 millisecondes 
