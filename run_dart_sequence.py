@@ -231,7 +231,7 @@ def main():
     # Ensure consistent path separators
     if sys.platform == 'win32':
         sequence_xml = sequence_xml.replace('/', '\\')
-    
+    #run_simulation(sequence_xml, DART_HOME, DART_LOCAL, DART_TOOLS)
     if os.path.exists(sequence_xml):
         #print(f"Running sequence from: {sequence_xml}")
         #print(f"DART_HOME: {DART_HOME}")

@@ -3,6 +3,50 @@ import xml.dom.minidom as minidom
 import json
 import os
 import random
+import re
+
+def get_dart_version_from_xml(simulation_path):
+    """
+    Read the existing object_3d.xml file and extract the DART version information
+    Returns a dictionary with build and version attributes
+    """
+    xml_path = os.path.join(simulation_path, "input", "object_3d.xml")
+    version_info = {
+        "build": "v1410",  # Default values if file doesn't exist
+        "version": "5.10.2"
+    }
+    
+    if not os.path.exists(xml_path):
+        print(f"Warning: No existing object_3d.xml found at {xml_path}. Using default version info.")
+        return version_info
+    
+    try:
+        # Read the file and extract version info
+        with open(xml_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Use regex to find the DartFile element with build and version attributes
+        match = re.search(r'<DartFile\s+build="(v\d+)"\s+version="([\d\.]+)"', content)
+        if match:
+            version_info["build"] = match.group(1)
+            version_info["version"] = match.group(2)
+            print(f"Found DART version: build={version_info['build']}, version={version_info['version']}")
+        else:
+            # Try parsing with ElementTree as fallback
+            try:
+                tree = ET.parse(xml_path)
+                root = tree.getroot()
+                if 'build' in root.attrib and 'version' in root.attrib:
+                    version_info["build"] = root.attrib['build']
+                    version_info["version"] = root.attrib['version']
+                    print(f"Found DART version: build={version_info['build']}, version={version_info['version']}")
+            except Exception as e:
+                print(f"Failed to parse XML for version info: {e}")
+    
+    except Exception as e:
+        print(f"Error reading object_3d.xml: {e}")
+    
+    return version_info
 
 def read_positions_file(filename):
     positions = []
@@ -37,11 +81,12 @@ def get_obj_files(tree_obj_path):
                 obj_files.append(os.path.join(root, file))
     return obj_files
 
-def create_base_xml():
+def create_base_xml(version_info):
+    """Create the base XML structure with correct version info"""
     # Create the root structure
     root = ET.Element("DartFile")
-    root.set("build", "v1410")
-    root.set("version", "5.10.6")
+    root.set("build", version_info["build"])
+    root.set("version", version_info["version"])
     
     # Create object_3d element
     object_3d = ET.SubElement(root, "object_3d")
@@ -72,6 +117,7 @@ def create_base_xml():
     return root, object_list
 
 def create_object(position_data, object_index, obj_file_path, use_individual_temps, use_individual_optical):
+    """Create object definition for DART versions other than 5.10.2"""
     obj = ET.Element("Object")
     obj.set("file_src", obj_file_path)
     obj.set("hasGroups", "1")
@@ -209,6 +255,147 @@ def create_object(position_data, object_index, obj_file_path, use_individual_tem
     
     return obj
 
+def create_object_v510(position_data, object_index, obj_file_path, use_individual_temps, use_individual_optical):
+    """Create object definition for DART version 5.10.2"""
+    obj = ET.Element("Object")
+    obj.set("file_src", obj_file_path)
+    obj.set("hasGroups", "1")
+    obj.set("hidden", "0")
+    obj.set("hideRB", "0")
+    obj.set("isDisplayed", "1")
+    obj.set("name", "Object")
+    obj.set("num", str(object_index))
+    obj.set("objectColor", "125 0 125")
+    obj.set("objectDEMMode", "0")
+    obj.set("repeatedOnBorder", "1")
+    
+    # Geometric Properties
+    geo_props = ET.SubElement(obj, "GeometricProperties")
+    
+    pos_props = ET.SubElement(geo_props, "PositionProperties")
+    pos_props.set("xpos", str(position_data['xpos']))
+    pos_props.set("ypos", str(position_data['ypos']))
+    pos_props.set("zpos", str(position_data['zpos']))
+    
+    dim_3d = ET.SubElement(geo_props, "Dimension3D")
+    dim_3d.set("xdim", "9.32332992553711")
+    dim_3d.set("ydim", "9.625602722167969")
+    dim_3d.set("zdim", "6.392255189130083")
+    
+    center_3d = ET.SubElement(geo_props, "Center3D")
+    center_3d.set("xCenter", "-0.15236902236938477")
+    center_3d.set("yCenter", "-0.17827844619750977")
+    center_3d.set("zCenter", "3.1936185945523903")
+    
+    scale_props = ET.SubElement(geo_props, "ScaleProperties")
+    scale_props.set("xScaleDeviation", "0.0")
+    scale_props.set("xscale", str(position_data['xscale']))
+    scale_props.set("yScaleDeviation", "0.0")
+    scale_props.set("yscale", str(position_data['yscale']))
+    scale_props.set("zScaleDeviation", "0.0")
+    scale_props.set("zscale", str(position_data['zscale']))
+    
+    rot_props = ET.SubElement(geo_props, "RotationProperties")
+    rot_props.set("xRotDeviation", "0.0")
+    rot_props.set("xrot", str(position_data['xrot']))
+    rot_props.set("yRotDeviation", "0.0")
+    rot_props.set("yrot", str(position_data['yrot']))
+    rot_props.set("zRotDeviation", "0.0")
+    rot_props.set("zrot", str(position_data['zrot']))
+    
+    # Add other properties
+    obj_optical = ET.SubElement(obj, "ObjectOpticalProperties")
+    obj_optical.set("isLAICalc", "0")
+    obj_optical.set("isSingleGlobalLai", "0")
+    obj_optical.set("sameOPObject", "0")
+    obj_optical.set("transparent", "0")
+    obj_optical.set("useTemperaturePerTriangle", "0")  # New in v5.10.2
+    
+    obj_type = ET.SubElement(obj, "ObjectTypeProperties")
+    obj_type.set("sameOTObject", "0")
+    
+    # Add Groups
+    groups = ET.SubElement(obj, "Groups")
+    
+    # Leaves Group
+    leaves = ET.SubElement(groups, "Group")
+    leaves.set("groupDEMMode", "0")
+    leaves.set("hidden", "0")
+    leaves.set("hideRB", "0")
+    leaves.set("isLAICalc", "0")
+    leaves.set("name", "Leaves")
+    leaves.set("num", "1")
+    leaves.set("transparent", "0")
+    
+    # In v5.10.2, optical properties include thermal properties directly
+    leaves_op = ET.SubElement(leaves, "GroupOpticalProperties")
+    leaves_op.set("doubleFace", "0")
+    leaves_op.set("useTemperaturePerTriangle", "0")  # New in v5.10.2
+    
+    # Set optical property based on configuration
+    leaves_opl = ET.SubElement(leaves_op, "OpticalPropertyLink")
+    if use_individual_optical:
+        leaves_opl.set("ident", f"leaf_{object_index}")
+    else:
+        leaves_opl.set("ident", "leaf")
+    leaves_opl.set("indexFctPhase", "1")  # Different in v5.10.2 (was 0)
+    leaves_opl.set("type", "0")
+    
+    # Set temperature property based on configuration (directly under GroupOpticalProperties)
+    leaves_tpl = ET.SubElement(leaves_op, "ThermalPropertyLink")
+    if use_individual_temps:
+        leaves_tpl.set("idTemperature", f"Temp_leaf_{object_index}")
+    else:
+        leaves_tpl.set("idTemperature", "Temperature_290_310")
+    leaves_tpl.set("indexTemperature", "1")  # Different in v5.10.2 (was 0)
+    
+    # Group type properties
+    leaves_gtp = ET.SubElement(leaves, "GroupTypeProperties")
+    leaves_otl = ET.SubElement(leaves_gtp, "ObjectTypeLink")
+    leaves_otl.set("identOType", "Leaf")
+    leaves_otl.set("indexOT", "102")
+    
+    # Trunk Group
+    trunk = ET.SubElement(groups, "Group")
+    trunk.set("groupDEMMode", "0")
+    trunk.set("hidden", "0")
+    trunk.set("hideRB", "0")
+    trunk.set("isLAICalc", "0")
+    trunk.set("name", "Trunk")
+    trunk.set("num", "2")
+    trunk.set("transparent", "0")
+    
+    # In v5.10.2, optical properties include thermal properties directly
+    trunk_op = ET.SubElement(trunk, "GroupOpticalProperties")
+    trunk_op.set("doubleFace", "0")
+    trunk_op.set("useTemperaturePerTriangle", "0")  # New in v5.10.2
+    
+    # Optical property link
+    trunk_opl = ET.SubElement(trunk_op, "OpticalPropertyLink")
+    trunk_opl.set("ident", "trunk")
+    trunk_opl.set("indexFctPhase", "2")  # Different in v5.10.2 (was 1)
+    trunk_opl.set("type", "0")
+    
+    # Thermal property link (directly under GroupOpticalProperties)
+    trunk_tpl = ET.SubElement(trunk_op, "ThermalPropertyLink")
+    if use_individual_temps:
+        trunk_tpl.set("idTemperature", f"Temp_trunk_{object_index}")
+    else:
+        trunk_tpl.set("idTemperature", "Temperature_290_310")
+    trunk_tpl.set("indexTemperature", "2")  # Different in v5.10.2 (was 0)
+    
+    # Group type properties
+    trunk_gtp = ET.SubElement(trunk, "GroupTypeProperties")
+    trunk_otl = ET.SubElement(trunk_gtp, "ObjectTypeLink")
+    trunk_otl.set("identOType", "Trunk")
+    trunk_otl.set("indexOT", "103")
+    
+    return obj
+
+def is_version_5102(version):
+    """Check if the version is 5.10.x"""
+    return version.startswith("5.10.2")
+
 def update_object_3d_xml(config_path):
     # Read configuration
     with open(config_path, 'r') as f:
@@ -221,6 +408,9 @@ def update_object_3d_xml(config_path):
     settings = config['simulation_settings']
     params_to_vary = config['parameters_to_vary']
     
+    # Get DART version information from existing file
+    version_info = get_dart_version_from_xml(simulation_path)
+    
     # Read positions
     positions = read_positions_file(position_file)
     if not positions:
@@ -232,13 +422,20 @@ def update_object_3d_xml(config_path):
     if not obj_files:
         print(f"No .obj files found in {tree_obj_path}")
         return
-    #print(settings['multi_tree'])
+    
     # Select obj file based on multi_tree setting
     if not settings['multi_tree']:
         obj_files = [obj_files[0]]  # Use only the first obj file
     
-    # Create base XML structure
-    root, object_list = create_base_xml()
+    # Create base XML structure with correct version info
+    root, object_list = create_base_xml(version_info)
+    
+    # Check if we should use the v5.10.2 format
+    use_v5102_format = is_version_5102(version_info['version'])
+    print(f"Using {'v5.10.2' if use_v5102_format else 'standard'} object format")
+    
+    # Use appropriate object creation function based on DART version
+    create_obj_fn = create_object_v510 if use_v5102_format else create_object
     
     # Add objects for each position
     for i, pos in enumerate(positions):
@@ -249,7 +446,7 @@ def update_object_3d_xml(config_path):
         use_individual_temps = params_to_vary['tree_temperature']
         use_individual_optical = params_to_vary['chlorophyl'] or params_to_vary['water_thickness']
         
-        object_list.append(create_object(pos, i, obj_file, use_individual_temps, use_individual_optical))
+        object_list.append(create_obj_fn(pos, i, obj_file, use_individual_temps, use_individual_optical))
     
     # Add ObjectFields
     ET.SubElement(root.find('object_3d'), "ObjectFields")
@@ -266,9 +463,9 @@ def update_object_3d_xml(config_path):
         # Remove the first line (xml declaration) since we already wrote it
         f.write(xml_str[xml_str.find("\n")+1:])
     
-    print(f"object_3d.xml has been Updated")
+    print(f"object_3d.xml has been Updated with DART {version_info['version']} (build {version_info['build']})")
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "config.json")
-    update_object_3d_xml(config_path) 
+    update_object_3d_xml(config_path)

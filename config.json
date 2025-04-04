@@ -1,10 +1,10 @@
 {
     "paths": {
-        "simulation_path": "C:/Users/LENOVO/DART/user_data/simulations/simulation_test",
-        "position_txt_path": "C:/Users/LENOVO/DART/user_data/simulations/simulation_test/positions/position.txt",
-        "tree_obj_path": "C:/Users/LENOVO/DART/user_data/simulations/simulation_test/trees",
-        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/simulation_test/soils",
-        "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/simulation_test/saveTIF"
+        "simulation_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T",
+        "position_txt_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/positions/position.txt",
+        "tree_obj_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/trees",
+        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/sol",
+        "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/saveTIF"
     },
     "simulation_settings": {
         "multi_sol": true,

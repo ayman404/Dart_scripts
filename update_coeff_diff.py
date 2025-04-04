@@ -100,12 +100,23 @@ def create_soil_lambertian_multi(soil_name, soil_folder_path, spectral_info):
     node_factor.set("useSameFactorForAllBands", "1")
     node_factor.set("useSameOpticalFactorMatrixForAllBands", "0")
     
+    # Get all txt files from the soil folder
+    soil_files = [f for f in os.listdir(soil_folder_path) if f.endswith('.txt')]
+    soil_files.sort()  # Sort files alphabetically
+    
+    # Map sorted spectral bands to sorted soil files
+    sorted_bands = sorted(spectral_info.keys())
+    
     # Add lambertianMultiplicativeFactorForLUT elements for each band
-    for band_num in sorted(spectral_info.keys()):
-        band_file = f"sol_bande{band_num}.txt"
-        band_file_path = os.path.join(soil_folder_path, band_file)
-        if os.path.exists(band_file_path):
-            node_factor.append(create_lambertian_multiplicative_factor_for_lut(band_file_path))
+    for i, band_num in enumerate(sorted_bands):
+        # Make sure we don't go out of bounds for soil_files
+        if i < len(soil_files):
+            file_path = os.path.join(soil_folder_path, soil_files[i])
+            # Add the factor for this band
+            node_factor.append(create_lambertian_multiplicative_factor_for_lut(file_path))
+            print(f"  Assigned soil file '{soil_files[i]}' to band {band_num}")
+        else:
+            print(f"  Warning: No soil file available for band {band_num}")
     
     return lambertian_multi
 
@@ -179,8 +190,8 @@ def update_coeff_diff_xml(config_path):
             if spectral_info:
                 soil_factor_path = config['paths']['soil_factor_path']
                 # Get all soil folders
-                soil_folders = [f for f in os.listdir(soil_factor_path) 
-                              if os.path.isdir(os.path.join(soil_factor_path, f))]
+                soil_folders = sorted([f for f in os.listdir(soil_factor_path) 
+                              if os.path.isdir(os.path.join(soil_factor_path, f))])
                 
                 # Create LambertianMulti elements for each soil
                 for soil_folder in soil_folders:
@@ -287,4 +298,4 @@ def update_coeff_diff_xml(config_path):
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "config.json")
-    update_coeff_diff_xml(config_path) 
+    update_coeff_diff_xml(config_path)

@@ -6,7 +6,64 @@ import rasterio
 from rasterio.transform import from_origin
 import re
 from preprocess_soils import get_spectral_intervals
+import xml.etree.ElementTree as ET
 
+np.seterr(divide='ignore', invalid='ignore')
+    
+# Charger les valeurs de LAI depuis le fichier lai.txt
+def load_lai_values(lai_file):
+    lai_values = {}
+    with open(lai_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            if ':' in line:
+                key, value = line.split(':')
+                lai_values[key.strip()] = float(value.strip())
+    return lai_values
+
+# Extraire les objets depuis object3d.xml
+def extract_objects_from_xml(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    
+    objects = []
+    for obj in root.findall(".//Object"):
+        file_src = obj.get("file_src").split('\\')[-1]  # Récupérer juste le nom du fichier
+        objects.append(file_src.replace('.obj', ''))
+    
+    return objects
+
+# Mettre à jour props.json avec les valeurs de LAI
+def update_props_json(props_file, objects, lai_values):
+    with open(props_file, 'r', encoding='utf-8') as f:
+        props = json.load(f)
+    
+    for i, obj in enumerate(objects):
+        if obj in lai_values:
+            props[f'lai{i}'] = lai_values[obj]
+    
+    with open(props_file, 'w', encoding='utf-8') as f:
+        json.dump(props, f, indent=4)
+
+# Fonction principale pour parcourir les dossiers et ajouter les valeurs de LAI dans props.json
+def process_sequences(lai_file, saveTIF_directory, xml_file_directory):
+    lai_values = load_lai_values(lai_file)
+    
+    # Parcours des sous-dossiers dans saveTIF
+    for sequence_dir in os.listdir(saveTIF_directory):
+        sequence_path = os.path.join(saveTIF_directory, sequence_dir)
+        
+        if os.path.isdir(sequence_path):
+            # Trouver le fichier object3d.xml dans xml_file_directory
+            xml_file = os.path.join(xml_file_directory, 'object_3d.xml')
+            if os.path.exists(xml_file):
+                objects = extract_objects_from_xml(xml_file)
+                
+                # Trouver et mettre à jour le fichier props.json dans chaque séquence
+                props_file = os.path.join(sequence_path, 'props.json')
+                if os.path.exists(props_file):
+                    update_props_json(props_file, objects, lai_values)
+                    print(f'Mis à jour: {props_file}')    
+    
 np.seterr(divide='ignore', invalid='ignore')
 
 def load_config():
@@ -167,12 +224,12 @@ def save_tiff_and_props():
             print(f"Processing {band} as {'thermal' if is_thermal else 'reflectance'} band using {folder_type} folder")
             
             # Get header file
-            ima_prefixed = [filename for filename in os.listdir(band_folder) if filename.startswith("ima")]
+            ima_prefixed = sorted([filename for filename in os.listdir(band_folder) if filename.startswith("ima")])
             if not ima_prefixed:
                 print(f"No image files found in: {band_folder}")
                 continue
                 
-            header_files = [filename for filename in ima_prefixed if filename.endswith("mpr")]
+            header_files = sorted([filename for filename in ima_prefixed if filename.endswith("mpr")])
             if not header_files:
                 print(f"No header files found in: {band_folder}")
                 continue
@@ -189,7 +246,7 @@ def save_tiff_and_props():
                 continue
                 
             # Read image data
-            img_files = [filename for filename in ima_prefixed if filename.endswith("mp#")]
+            img_files = sorted([filename for filename in ima_prefixed if filename.endswith("mp#")])
             if not img_files:
                 print(f"No mp# files found for {band}")
                 continue
@@ -255,3 +312,12 @@ def save_tiff_and_props():
 
 if __name__ == "__main__":
     save_tiff_and_props()
+    # Add lai values
+    config = load_config()
+    
+    # Get paths from configuration
+    simulation_path = config['paths']['simulation_path']
+    output_tif_path = config['paths']['output_tif_path']
+    lai_file= config['paths']['lai_file']
+    object_3d_directory= os.path.join(simulation_path, "input")
+    process_sequences(lai_file, output_tif_path, object_3d_directory)   
