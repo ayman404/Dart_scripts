@@ -67,8 +67,8 @@ def generate_contexts(grp_path, positions, img_height, img_width, chlorophyl, wa
             patch_tensor = torch.tensor(patch)
 
             torch.save(patch_tensor, os.path.join(folder_path, 'context.pt'))
-            print(f"✅ Context generated for {folder}")
-            print(f"📏 Scales used: {scales}")
+            print(f" Context generated for {folder}")
+            #print(f" Scales used: {scales}")
 
 def read_positions(file):
     """Reads positions and Xscale values from a text file."""
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # Read the scale parameter correctly
     SCALE_ACTIVE = config["parameters_to_vary"].get("scale", True)
-    print(f"🛠 Configuration: scale (raw) = {SCALE_ACTIVE}")
+    #print(f" Configuration: scale (raw) = {SCALE_ACTIVE}")
 
 
     # Read positions and scales
@@ -116,4 +116,4 @@ if __name__ == "__main__":
         scales = XSCALES  # Use xscales from position.txt
 
     # Generate contexts
-    generate_contexts(output_tif_path, POSITIONS, 120, 240, chlorophyl, water_thickness, scales)
+    generate_contexts(output_tif_path, POSITIONS, 240, 120, chlorophyl, water_thickness, scales)
