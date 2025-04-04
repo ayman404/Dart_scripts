@@ -1,0 +1,4 @@
+olive_tree_Nasrallah_13_simplified : 2.48
+olive_tree_Nasrallah_13_simplified60 : 1.95
+olive_tree_Nasrallah_13_simplified80: 1.21
+olive_tree_Nasrallah_13_simplified90 : 0.67

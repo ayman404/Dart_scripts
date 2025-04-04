@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DartFile build="v1410" version="5.10.6">
+    <Coeff_diff fluorescenceFile="0" fluorescenceProducts="0" useCombinedYield="0">
+        <Surfaces>
+            <LambertianMultiFunctions>
+                <LambertianMulti ident="tree" lambertianDefinition="0"
+                    roStDev="0.000" useMultiplicativeFactorForLUT="1">
+                    <Lambertian
+                        ModelName="reflect_equal_1_trans_equal_0_0"
+                        databaseName="Lambertian_vegetation.db" useSpecular="0">
+                        <ProspectExternalModule isFluorescent="0" useProspectExternalModule="0"/>
+                    </Lambertian>
+                    <lambertianNodeMultiplicativeFactorForLUT
+                        diffuseTransmittanceAcceleration="0."
+                        diffuseTransmittanceFactor="1"
+                        directTransmittanceFactor="1"
+                        reflectanceFactor="1"
+                        specularIntensityFactor="1"
+                        useSameFactorForAllBands="1" useSameOpticalFactorMatrixForAllBands="0">
+                        <lambertianMultiplicativeFactorForLUT
+                            diffuseTransmittanceFactor="1"
+                            directTransmittanceFactor="1"
+                            reflectanceFactor="1"
+                            specularIntensityFactor="1" useOpticalFactorMatrix="0"/>
+                        <lambertianMultiplicativeFactorForLUT
+                            diffuseTransmittanceFactor="1"
+                            directTransmittanceFactor="1"
+                            reflectanceFactor="1"
+                            specularIntensityFactor="1" useOpticalFactorMatrix="0"/>
+                        <lambertianMultiplicativeFactorForLUT
+                            diffuseTransmittanceFactor="1"
+                            directTransmittanceFactor="1"
+                            reflectanceFactor="1"
+                            specularIntensityFactor="1" useOpticalFactorMatrix="0"/>
+                        <lambertianMultiplicativeFactorForLUT
+                            diffuseTransmittanceFactor="1"
+                            directTransmittanceFactor="1"
+                            reflectanceFactor="1"
+                            specularIntensityFactor="1" useOpticalFactorMatrix="0"/>
+                    </lambertianNodeMultiplicativeFactorForLUT>
+                </LambertianMulti>
+            </LambertianMultiFunctions>
+            <HapkeSpecularMultiFunctions/>
+            <RPVMultiFunctions/>
+            <PhaseExternMultiFunctions/>
+            <SpecularMultiFunctions/>
+            <MixedMultiFunctions/>
+        </Surfaces>
+        <Volumes>
+            <UnderstoryMultiFunctions integrationStepOnPhi="10"
+                integrationStepOnTheta="1" outputLADFile="0"/>
+            <AirMultiFunctions/>
+        </Volumes>
+        <Temperatures>
+            <ThermalFunction deltaT="20.0" idTemperature="T"
+                meanT="300.0" override3DMatrix="0"
+                singleTemperatureSurface="1" useOpticalFactorMatrix="0" usePrecomputedIPARs="0"/>
+            <ThermalFunction deltaT="0" idTemperature="1" meanT="300.0"
+                override3DMatrix="0" singleTemperatureSurface="1"
+                useOpticalFactorMatrix="0" usePrecomputedIPARs="0"/>
+            <ThermalFunction deltaT="0" idTemperature="2" meanT="310.0"
+                override3DMatrix="0" singleTemperatureSurface="1"
+                useOpticalFactorMatrix="0" usePrecomputedIPARs="0"/>
+            <ThermalFunction deltaT="0" idTemperature="3" meanT="322.0"
+                override3DMatrix="0" singleTemperatureSurface="1"
+                useOpticalFactorMatrix="0" usePrecomputedIPARs="0"/>
+        </Temperatures>
+    </Coeff_diff>
+</DartFile>

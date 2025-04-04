@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DartFile build="v1006" version="5.7.0">
+    <Phase calculatorMethod="0">
+        <AtmosphereRadiativeTransfer TOAtoBOA="1"/>
+        <ExpertModeZone albedoThreshold="1.0E-5"
+            distanceBetweenIlluminationSubCenters="0.125" expertMode="0"
+            extrapolationMethod="0" illuminationRepartitionMode="2"
+            isInterceptedPowerPerDirectionForSpecularCheck="0"
+            lightPropagationThreshold="1.0E-5" maxNbSceneCrossing="5"
+            nbRandomPointsPerInteceptionAtmosphere="1"
+            nbSubSubcenterTurbidEmission="40" nbSubcenterVolume="2"
+            nbThreads="4" nbTrianglesWithinVoxelAcceleration="10"
+            sparseVoxelAcceleration="1" subFaceBarycenterEnabled="1"
+            surfaceBarycenterEnabled="1"
+            thermalEmissionSurfaceSubdivision="0.01" useExternalScripts="0"/>
+        <DartInputParameters>
+            <nodefluxtracking gaussSiedelAcceleratingTechnique="1" numberOfIteration="4"/>
+            <SpectralDomainTir temperatureMode="0">
+                <skylTemperature SKYLForTemperatureAssignation="0.0"
+                    distanceBetweenIlluminationSubCenters="0.1" histogramThreshold="5.0"/>
+            </SpectralDomainTir>
+            <SpectralIntervals>
+                <SpectralIntervalsProperties bandNumber="0"
+                    deltaLambda="0.02" meanLambda="0.56" spectralDartMode="0"/>
+            </SpectralIntervals>
+            <temperatureAtmosphere atmosphericApparentTemperature="0.0"/>
+            <nodeIlluminationMode illuminationMode="0" irradianceMode="0">
+                <irradianceDatabaseNode databaseName="Solar_constant.db"
+                    irradianceColumn="irradiance"
+                    irradianceTable="TOASolar_THKUR"
+                    weightAtmosphereParameters="1" weightReflectanceParameters="1">
+                    <WeightingParameters sceneAverageTemperatureForPonderation="300.0"/>
+                </irradianceDatabaseNode>
+                <SpectralIrradiance>
+                    <CommonParameters commonIrradianceCheckBox="0"
+                        commonSkylCheckBox="0" irraDef="0"/>
+                    <SpectralIrradianceValue Skyl="0.0" bandNumber="0" irradiance="0"/>
+                </SpectralIrradiance>
+            </nodeIlluminationMode>
+            <ImageSideIllumination disableSolarIllumination="0"
+                disableThermalEmission="0" sideIlluminationEnabled="0"/>
+        </DartInputParameters>
+        <DartProduct>
+            <dartModuleProducts allIterationsProducts="1"
+                brfProducts="1" lidarImageProducts="0" lidarProducts="0"
+                order1Products="0" polarizationProducts="0"
+                radiativeBudgetProducts="0" temperaturePerTrianglePerCell="0">
+                <BrfProductsProperties brfProduct="1"
+                    centralizedBrfProduct="1" extrapolation="1"
+                    horizontalOversampling="1" image="1"
+                    luminanceProducts="0" maximalThetaImages="25.0"
+                    nb_scene="1" projection="0" sensorOversampling="1"
+                    sensorPlaneprojection="1" transmittanceImages="0">
+                    <ExpertModeZone_Etalement etalement="2">
+                        <ExpertModeZone_Projection keepNonProjectedImage="0"/>
+                        <ExpertModeZone_PerTypeProduct generatePerTypeProduct="0"/>
+                    </ExpertModeZone_Etalement>
+                </BrfProductsProperties>
+            </dartModuleProducts>
+            <maketModuleProducts MNEProducts="0" areaMaketProducts="0"
+                coverRateProducts="0" laiProducts="0" objectGeneration="0"/>
+        </DartProduct>
+        <SensorImageSimulation importMultipleSensors="0"/>
+    </Phase>
+</DartFile>

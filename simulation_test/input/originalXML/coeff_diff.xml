@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DartFile build="v1006" version="5.7.0">
+    <Coeff_diff fluorescenceFile="0" fluorescenceProducts="0">
+        <LambertianMultiFunctions>
+            <LambertianMulti ModelName="reflect_equal_1_trans_equal_0_0"
+                databaseName="Lambertian_mineral.db" ident="Lamb_ro=1"
+                roStDev="0.0" useMultiplicativeFactorForLUT="1" useSpecular="0">
+                <ProspectExternalModule isFluorescent="0" useProspectExternalModule="0"/>
+                <lambertianNodeMultiplicativeFactorForLUT
+                    diffuseTransmittanceFactor="1.0"
+                    directTransmittanceFactor="1.0"
+                    reflectanceFactor="1.0"
+                    specularIntensityFactor="1.0"
+                    useSameFactorForAllBands="0" useSameOpticalFactorMatrixForAllBands="0">
+                    <lambertianMultiplicativeFactorForLUT
+                        diffuseTransmittanceFactor="1.0"
+                        directTransmittanceFactor="1.0"
+                        reflectanceFactor="1.0"
+                        specularIntensityFactor="1.0" useOpticalFactorMatrix="0"/>
+                </lambertianNodeMultiplicativeFactorForLUT>
+            </LambertianMulti>
+        </LambertianMultiFunctions>
+        <HapkeSpecularMultiFunctions/>
+        <RPVMultiFunctions/>
+        <UnderstoryMultiFunctions integrationStepOnPhi="10"
+            integrationStepOnTheta="1" outputLADFile="0"/>
+        <AirMultiFunctions/>
+        <Temperatures>
+            <ThermalFunction deltaT="20.0"
+                idTemperature="thermal_function_290_310" meanT="300.0"
+                override3DMatrix="0" useOpticalFactorMatrix="0"/>
+        </Temperatures>
+    </Coeff_diff>
+</DartFile>
