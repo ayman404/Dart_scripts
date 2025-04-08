@@ -8,63 +8,6 @@ import re
 from preprocess_soils import get_spectral_intervals
 import xml.etree.ElementTree as ET
 
-np.seterr(divide='ignore', invalid='ignore')
-    
-# Charger les valeurs de LAI depuis le fichier lai.txt
-def load_lai_values(lai_file):
-    lai_values = {}
-    with open(lai_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            if ':' in line:
-                key, value = line.split(':')
-                lai_values[key.strip()] = float(value.strip())
-    return lai_values
-
-# Extraire les objets depuis object3d.xml
-def extract_objects_from_xml(xml_file):
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    
-    objects = []
-    for obj in root.findall(".//Object"):
-        file_src = obj.get("file_src").split('\\')[-1]  # Récupérer juste le nom du fichier
-        objects.append(file_src.replace('.obj', ''))
-    
-    return objects
-
-# Mettre à jour props.json avec les valeurs de LAI
-def update_props_json(props_file, objects, lai_values):
-    with open(props_file, 'r', encoding='utf-8') as f:
-        props = json.load(f)
-    
-    for i, obj in enumerate(objects):
-        if obj in lai_values:
-            props[f'lai{i}'] = lai_values[obj]
-    
-    with open(props_file, 'w', encoding='utf-8') as f:
-        json.dump(props, f, indent=4)
-
-# Fonction principale pour parcourir les dossiers et ajouter les valeurs de LAI dans props.json
-def process_sequences(lai_file, saveTIF_directory, xml_file_directory):
-    lai_values = load_lai_values(lai_file)
-    
-    # Parcours des sous-dossiers dans saveTIF
-    for sequence_dir in os.listdir(saveTIF_directory):
-        sequence_path = os.path.join(saveTIF_directory, sequence_dir)
-        
-        if os.path.isdir(sequence_path):
-            # Trouver le fichier object3d.xml dans xml_file_directory
-            xml_file = os.path.join(xml_file_directory, 'object_3d.xml')
-            if os.path.exists(xml_file):
-                objects = extract_objects_from_xml(xml_file)
-                
-                # Trouver et mettre à jour le fichier props.json dans chaque séquence
-                props_file = os.path.join(sequence_path, 'props.json')
-                if os.path.exists(props_file):
-                    update_props_json(props_file, objects, lai_values)
-                    print(f'Mis à jour: {props_file}')    
-    
-np.seterr(divide='ignore', invalid='ignore')
 
 def load_config():
     """Load configuration from config.json file"""
@@ -310,14 +253,50 @@ def save_tiff_and_props():
 
     print("Processing complete")
 
+def update_props_with_lai(lai_file_path, saveTIF_path):
+    # === 1. Read the lai.txt file and create a dictionary ===
+    lai_dict = {}
+    with open(lai_file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                key, value = line.strip().split(":")
+                lai_dict[key.strip()] = float(value.strip())
+
+    # === 2. Loop through each sequence_i folder ===
+    for folder_name in os.listdir(saveTIF_path):
+        folder_path = os.path.join(saveTIF_path, folder_name)
+        if os.path.isdir(folder_path) and folder_name.startswith("sequence_"):
+            props_path = os.path.join(folder_path, "props.json")
+            if os.path.exists(props_path):
+                with open(props_path, "r", encoding="utf-8") as f:
+                    props = json.load(f)
+
+                # === 3. Update file_srcX keys to laiX values ===
+                updated_props = {}
+                for key, value in props.items():
+                    if key.startswith("file_src"):
+                        index = key.replace("file_src", "")
+                        filename = os.path.basename(value).replace(".obj", "")
+                        lai_value = lai_dict.get(filename)
+                        if lai_value is not None:
+                            updated_props[f"lai{index}"] = lai_value
+                        else:
+                            print(f"LAI value not found for: {filename} in {props_path}")
+                    else:
+                        updated_props[key] = value  # Keep other keys unchanged
+
+                # === 4. Overwrite the JSON file with updated values ===
+                with open(props_path, "w", encoding="utf-8") as f:
+                    json.dump(updated_props, f, indent=4)
+
+                print(f"props.json updated with Lai values")
+
 if __name__ == "__main__":
-    save_tiff_and_props()
-    # Add lai values
     config = load_config()
     
     # Get paths from configuration
-    simulation_path = config['paths']['simulation_path']
     output_tif_path = config['paths']['output_tif_path']
     lai_file= config['paths']['lai_file']
-    object_3d_directory= os.path.join(simulation_path, "input")
-    process_sequences(lai_file, output_tif_path, object_3d_directory)   
+    save_tiff_and_props()
+    update_props_with_lai(lai_file,output_tif_path)
+    

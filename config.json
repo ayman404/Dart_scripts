@@ -8,16 +8,16 @@
         "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/saveTIF"
     },
     "simulation_settings": {
-        "multi_sol": false,
+        "multi_sol": true,
         "multi_tree": true,
         "run_sequencer": true,
         "save_result_to_tif_json": true
     },
     "parameters_to_vary": {
-        "scale": false,
-        "tree_temperature": false,
+        "scale": true,
+        "tree_temperature": true,
         "chlorophyl": true,
-        "water_thickness": false,
+        "water_thickness": true,
         "soil_temperature": true
     },
     "nbr_of_sequence": 2
