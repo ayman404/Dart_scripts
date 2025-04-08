@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import torch
+import xml.etree.ElementTree as ET
 
 def load_config():
     """Load configuration from config.json file"""
@@ -87,6 +88,31 @@ def read_positions(file):
                 xscales.append(xscale)
     return positions, xscales
 
+def get_scene_dimensions(xml_file_path):
+    """
+    Extrait les dimensions x et y de la balise <SceneDimensions> dans un fichier XML.
+
+    Args:
+        xml_file_path (str): Chemin vers le fichier XML.
+
+    Returns:
+        tuple: (x, y) sous forme d'entiers si trouvés, sinon (None, None)
+    """
+    try:
+        tree = ET.parse(xml_file_path)
+        root = tree.getroot()
+        scene_dimensions = root.find(".//SceneDimensions")
+        if scene_dimensions is not None:
+            x = int(scene_dimensions.attrib.get("x"))
+            y = int(scene_dimensions.attrib.get("y"))
+            return x, y
+        else:
+            print("Balise <SceneDimensions> non trouvée.")
+            return None, None
+    except Exception as e:
+        print(f"Erreur lors de la lecture du fichier XML : {e}")
+        return None, None
+
 if __name__ == "__main__":
     
     config = load_config()
@@ -94,6 +120,9 @@ if __name__ == "__main__":
     # Get paths from configuration
     positions_file = config['paths']['position_txt_path']
     output_tif_path = config['paths']['output_tif_path']
+    simulation_path = config['paths']['simulation_path']
+    
+    maket_path = os.path.join(simulation_path, "input", "maket.xml")
 
 
 
@@ -114,6 +143,11 @@ if __name__ == "__main__":
         scales = []  # Scales will be read from props.json in generate_contexts
     else:
         scales = XSCALES  # Use xscales from position.txt
+        
+
+    x, y = get_scene_dimensions(maket_path)
+    #print(f"x = {x}, y = {y}")
+    
 
     # Generate contexts
-    generate_contexts(output_tif_path, POSITIONS, 240, 120, chlorophyl, water_thickness, scales)
+    generate_contexts(output_tif_path, POSITIONS, x, y, chlorophyl, water_thickness, scales)
