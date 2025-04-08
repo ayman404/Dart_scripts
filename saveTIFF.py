@@ -165,8 +165,8 @@ def save_tiff_and_props():
                 for k in range(1, len(x2) - 1, 2):
                     if k+1 < len(x2) and ':' in x2[k] and ':' in x2[k+1]:
                         try:
-                            param_parts = x2[k].split(':')
-                            value_parts = x2[k+1].split(':')
+                            param_parts = x2[k].split(':', 1)
+                            value_parts = x2[k+1].split(':', 1)
                             
                             if len(param_parts) > 1 and len(value_parts) > 1:
                                 param_name = param_parts[1].split('.')[-1]

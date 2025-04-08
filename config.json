@@ -3,20 +3,21 @@
         "simulation_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T",
         "position_txt_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/positions/position.txt",
         "tree_obj_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/trees",
-        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/sol",
+        "soil_factor_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/sol_600_600",
+        "lai_file": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/lai.txt",
         "output_tif_path": "C:/Users/LENOVO/DART/user_data/simulations/Simulation_S_T/saveTIF"
     },
     "simulation_settings": {
-        "multi_sol": true,
+        "multi_sol": false,
         "multi_tree": true,
         "run_sequencer": true,
         "save_result_to_tif_json": true
     },
     "parameters_to_vary": {
-        "scale": true,
-        "tree_temperature": true,
+        "scale": false,
+        "tree_temperature": false,
         "chlorophyl": true,
-        "water_thickness": true,
+        "water_thickness": false,
         "soil_temperature": true
     },
     "nbr_of_sequence": 2

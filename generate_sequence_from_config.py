@@ -112,6 +112,63 @@ def generate_random_values(nbr_simulation, num_trees):
     
     return cab_values, cw_values, temp_values
 
+def get_tree_obj_paths(tree_obj_path):
+    """Get the full paths of all tree obj files in the tree_obj_path directory."""
+    tree_paths = []
+    
+    try:
+        for root, _, files in os.walk(tree_obj_path):
+            for file in files:
+                if file.endswith('.obj'):
+                    # Get full path and convert to forward slashes for DART compatibility
+                    full_path = os.path.join(root, file).replace('\\', '/')
+                    tree_paths.append(full_path)
+        
+        # Sort to ensure consistent order
+        tree_paths.sort()
+        
+        if tree_paths:
+            print(f"Found {len(tree_paths)} tree object files")
+            #print("Tree object paths:", tree_paths)
+        else:
+            print(f"Warning: No .obj files found in {tree_obj_path}")
+            
+        return tree_paths
+    except Exception as e:
+        print(f"Error reading tree objects: {str(e)}")
+        return []
+
+def add_tree_file_entries(group, tree_paths, num_trees, nbr_simulation):
+    """
+    Create DartSequencerDescriptorEntry elements for tree obj files.
+    
+    Args:
+        group: The XML group element to add entries to
+        tree_paths: List of available tree object file paths
+        num_trees: Number of trees in the scene
+        nbr_simulation: Number of simulations in the sequence
+    """
+    if not tree_paths:
+        print("No tree objects to add to sequence")
+        return
+    #print(f"Adding tree object entries for {num_trees} trees with {nbr_simulation} randomly selected models each, {tree_paths}")
+    # Create an entry for each object in the scene
+    for i in range(num_trees):
+        # For each tree, randomly select nbr_simulation models from tree_paths
+        selected_paths = rd.sample(tree_paths, nbr_simulation)
+        #print(f"Randomly selected {nbr_simulation} models for tree {i}: {selected_paths}")
+        
+        # Join the selected paths with semicolons for the args attribute
+        tree_paths_str = ";".join(selected_paths)
+        
+        # Create the entry
+        tree_entry = ET.SubElement(group, "DartSequencerDescriptorEntry")
+        tree_entry.set("args", tree_paths_str)
+        tree_entry.set("propertyName", f"object_3d.ObjectList.Object[{i}].file_src")
+        tree_entry.set("type", "enumerate")
+    
+    #print(f"Added tree object entries for {num_trees} trees with {nbr_simulation} randomly selected models each")
+
 def create_sequence_xml(config_path):
     # Read configuration
     with open(config_path, 'r') as f:
@@ -120,6 +177,7 @@ def create_sequence_xml(config_path):
     # Get parameters
     nbr_simulation = config['nbr_of_sequence']
     position_file = config['paths']['position_txt_path']
+    tree_obj_path = config['paths']['tree_obj_path']
     params_to_vary = config['parameters_to_vary']
     
     # Count trees
@@ -129,6 +187,9 @@ def create_sequence_xml(config_path):
         return
     
     print(f"Found {num_trees} trees in position file")
+    
+    # Get tree object paths for the sequence
+    tree_paths = get_tree_obj_paths(tree_obj_path)
     
     # Generate random values
     cab_values, cw_values, temp_values = generate_random_values(nbr_simulation, num_trees)
@@ -159,6 +220,10 @@ def create_sequence_xml(config_path):
     group = ET.SubElement(entries, "DartSequencerDescriptorGroup")
     group.set("currentDisplayedPage", "1")
     group.set("groupName", "group1")
+    
+    # Add tree file entries if we have tree paths and multi_tree is enabled
+    if config['simulation_settings']['multi_tree'] and tree_paths:
+        add_tree_file_entries(group, tree_paths, num_trees, nbr_simulation)
     
     # Add entries based on parameters_to_vary
     
