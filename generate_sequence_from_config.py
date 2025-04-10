@@ -155,9 +155,8 @@ def add_tree_file_entries(group, tree_paths, num_trees, nbr_simulation):
     # Create an entry for each object in the scene
     for i in range(num_trees):
         # For each tree, randomly select nbr_simulation models from tree_paths
-        selected_paths = rd.sample(tree_paths, nbr_simulation)
+        selected_paths = rd.choices(tree_paths, k=nbr_simulation)
         #print(f"Randomly selected {nbr_simulation} models for tree {i}: {selected_paths}")
-        
         # Join the selected paths with semicolons for the args attribute
         tree_paths_str = ";".join(selected_paths)
         
