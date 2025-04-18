@@ -16,6 +16,10 @@ def load_config():
     with open(config_path, 'r') as f:
         return json.load(f)
 
+def natural_sort_key(name):
+    match = re.search(r'\d+', name)
+    return int(match.group()) if match else -1
+
 def extract_size_from_config(content):
     """Extract image dimensions from header file"""
     size_match = re.search(r'Size=(\d+)\s+(\d+)', content)
@@ -81,7 +85,7 @@ def save_tiff_and_props():
         return
     
     # Get sequence directories
-    sequence_dirs = [d for d in os.listdir(pathsim) if os.path.isdir(os.path.join(pathsim, d))]
+    sequence_dirs = sorted([d for d in os.listdir(pathsim) if os.path.isdir(os.path.join(pathsim, d))],key=natural_sort_key)
     print(f"Found {len(sequence_dirs)} sequence directories: {sequence_dirs}")
     
     # Process each sequence
@@ -132,8 +136,8 @@ def save_tiff_and_props():
 
         # Find available bands
         band_dir = os.path.join(pathsim, seq_dir, 'output')
-        available_bands = [d for d in os.listdir(band_dir) if d.startswith("BAND") and os.path.isdir(os.path.join(band_dir, d))]
-        
+        #available_bands = sorted([d for d in os.listdir(band_dir) if d.startswith("BAND") and os.path.isdir(os.path.join(band_dir, d))])
+        available_bands = sorted([d for d in os.listdir(band_dir) if d.startswith("BAND") and os.path.isdir(os.path.join(band_dir, d))],key=natural_sort_key)
         if not available_bands:
             print(f"No band directories found in {band_dir}")
             continue
@@ -144,20 +148,24 @@ def save_tiff_and_props():
         bands_arr = []
         band_names = []
         
-        for band in sorted(available_bands):
+        for band in available_bands:
             band_num = int(band.replace("BAND", ""))
             band_names.append(band)
             
             # Determine if this is a thermal band
             is_thermal = is_thermal_band(band_num, band_modes)
-            folder_type = "Tapp" if is_thermal else "BRF"
+            #folder_type = "Tapp" if is_thermal else "BRF"
+            folder_type = "TOA"
             
             # Check both BRF and Tapp folders
-            band_folder = os.path.join(band_dir, band, folder_type, "ITERX", "IMAGES_DART")
+            #band_folder = os.path.join(band_dir, band, folder_type, "ITERX", "IMAGES_DART")
+            band_folder = os.path.join(band_dir, band, folder_type, "IMAGES_DART")
             if not os.path.exists(band_folder):
                 # Try the alternative folder
-                alt_folder_type = "BRF" if folder_type == "Tapp" else "Tapp"
-                band_folder = os.path.join(band_dir, band, alt_folder_type, "ITERX", "IMAGES_DART")
+                #alt_folder_type = "BRF" if folder_type == "Tapp" else "Tapp"
+                alt_folder_type = "TOA"
+                #band_folder = os.path.join(band_dir, band, alt_folder_type, "ITERX", "IMAGES_DART")
+                band_folder = os.path.join(band_dir, band, alt_folder_type, "IMAGES_DART")
                 if not os.path.exists(band_folder):
                     print(f"Band folder not found for {band}, skipping")
                     continue
